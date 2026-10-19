@@ -12,9 +12,10 @@ Run `npm install` first, then use `npm run dev` for the browser and `npm test` f
 | 6 | Parser quality: parser tests — **completed 2026-10-19** | Add left-associativity, malformed input, lexical-error propagation, and positional-error cases. | Error behavior is documented and tested. |
 | 7 | SVG tree: `visualizer/` — **completed 2026-10-19** | Implement pure subtree-width layout, edges, labels, type-specific styles, and SVG empty state. | Representative AST layouts and invalid-input behavior have automated coverage. |
 | 8 | SVG usability: CSS/components — **completed 2026-10-19** | Add accessible SVG labels, horizontal overflow for wide trees, error-safe replacement, and clear/reset control. | Controls, empty state, and narrow-screen layout are implemented; browser smoke testing remains part of final QA. |
-| 9 | Traversals: `traversal/traversal.js`, tests | Confirm preorder, inorder, postorder without mutation. | Exact traversal-order tests pass. |
-| 10 | Traversal UI: components, `main.js` | Present selectable traversal output or explanation. | UI behavior has manual checks. |
+| 9 | Traversals: `traversal/traversal.js`, tests — **completed 2026-10-19** | Implement pure preorder, inorder, and postorder traversals with node validation, error handling, circular reference detection, consistent labels, and AST immutability. | Exact traversal-order, unary convention, malformed node, and immutability tests pass. |
+| 10 | Traversal UI: components, `main.js` — **completed 2026-10-19** | Build `traversalPanel.js` with educational rules and walkthrough, integrate into `main.js`, and isolate traversal execution from parser and tree rendering. | Traversal outputs display responsively; stale results clear on parse errors; error handling isolates failures. |
 | 11 | Syntax errors: parser/components | Improve concise messages, source positions, and recovery display. | Invalid input never crashes the UI. |
+
 | 12 | Integration: all relevant files | Exercise representative expressions and clarify labels. | Parser/UI contract has no duplicate grammar logic. |
 | 13 | Final quality: tests, docs | Expand edge-case tests; review accessibility and docs. | `npm test` is clean and docs reflect implementation. |
 | 14 | Demonstration readiness: README, LOG | Perform final manual smoke test and record actual outcomes. | Demo path and limitations are documented. |

@@ -60,7 +60,14 @@ Thus `a + b * 2` produces:
 
 The tokenizer converts source safely and rejects invalid characters or malformed numbers. Decimal literals allow one decimal point with digits on at least one side: `12.5`, `.5`, and `5.` are valid. A second decimal point in the same numeric literal, such as `1.2.3` or `7..`, is rejected as a lexical error with its source range. The parser consumes its tokens according to the grammar and produces only the schema above. Its `parse(source)` API returns a complete AST or throws: `ParseError` includes zero-based `position`, `start`, and exclusive `end` offsets for syntax failures, while tokenizer errors retain their lexical range. It rejects empty or malformed expressions, trailing/unexpected tokens, absent operands, and missing closing parentheses. Whitespace has no meaning. Division by zero is not syntax-invalid; it is a future evaluation/runtime concern.
 
-The visualizer consumes an already-parsed AST without reparsing source. It calculates a deterministic top-down layout from subtree widths, then renders parent-child edges and style-distinguished binary, unary, identifier, and literal nodes into SVG. Parent nodes are centered over their child subtree; wide trees use a responsive `viewBox` and horizontal scroll container. Invalid AST shapes are rejected with useful errors. Traversal functions must return nodes in preorder, inorder, or postorder and must not mutate the AST.
+The visualizer consumes an already-parsed AST without reparsing source. It calculates a deterministic top-down layout from subtree widths, then renders parent-child edges and style-distinguished binary, unary, identifier, and literal nodes into SVG. Parent nodes are centered over their child subtree; wide trees use a responsive `viewBox` and horizontal scroll container. Invalid AST shapes are rejected with useful errors.
+
+Traversal algorithms in `src/traversal/traversal.js` provide pure, deterministic walks over ParseVision's supported AST nodes without mutating the original tree:
+- **Preorder (`preorder`):** Visits the current node before visiting its children (Node → Left → Right). For unary expressions, visits operator before operand.
+- **Inorder (`inorder`):** For binary expressions, visits left subtree, operator node, then right subtree (Left → Node → Right). Because inorder traversal is naturally defined for binary trees, unary expressions visit the operator before its operand by documented convention.
+- **Postorder (`postorder`):** Visits children before visiting the current node (Left → Right → Node). For unary expressions, visits operand before operator.
+- **Node representations:** Traversal returns deterministic arrays of labeled strings (`Identifier(a)`, `Literal(2)`, `BinaryExpression(+)`, `UnaryExpression(-)`), while supporting `{ asNodes: true }` or custom formatters. Traversal rigorously validates nodes, rejects unsupported types or malformed structures with descriptive `TypeError`s, detects circular references, and enforces AST immutability.
+
 
 ## Acceptance criteria
 

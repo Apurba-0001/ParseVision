@@ -8,9 +8,10 @@ Expression syntax can feel opaque when it is only described by precedence rules.
 
 ## Scope and status
 
-Implemented: a handwritten tokenizer; recursive-descent parser for numbers, identifiers, parentheses, unary `+`/`-`, and binary `+`, `-`, `*`, `/`; AST factories; preorder, inorder, and postorder traversal modules; a responsive SVG AST visualizer; a responsive browser UI; and unit tests. The visualizer centers parents above their child subtrees, uses type-specific node colors, replaces stale trees on each submission, provides an accessible empty state, and permits horizontal scrolling for wide expressions.
+Implemented: a handwritten tokenizer; recursive-descent parser for numbers, identifiers, parentheses, unary `+`/`-`, and binary `+`, `-`, `*`, `/`; AST factories; preorder, inorder, and postorder traversal algorithms; an interactive SVG AST visualizer; an educational traversal results panel with order explanations; a responsive browser UI; and comprehensive unit tests. The visualizer centers parents above their child subtrees, uses type-specific node colors, replaces stale trees on each submission, provides an accessible empty state, and permits horizontal scrolling for wide expressions. The traversal panel updates deterministically on successful parsing, clears on syntax errors, and isolates traversal failures without crashing the application.
 
-Planned work includes richer visual explanations, selectable traversal animation, more polished error guidance, accessibility review, and additional educational examples. This project does not yet evaluate expressions, persist examples, support assignments, or support a full programming language.
+Planned work includes token-stream display, selectable traversal animation, more polished error guidance, accessibility review, and additional educational examples. This project does not yet evaluate expressions, persist examples, support assignments, or support a full programming language.
+
 
 ## Technology stack
 
@@ -74,9 +75,40 @@ Expected AST (abbreviated):
 
 `*` is nested under the right side of `+` because multiplication has higher precedence.
 
+### Traversal outputs
+
+- **Preorder (Node → Left → Right):**
+  ```text
+  BinaryExpression(+)
+  Identifier(a)
+  BinaryExpression(*)
+  Identifier(b)
+  Literal(2)
+  ```
+
+- **Inorder (Left → Node → Right):**
+  ```text
+  Identifier(a)
+  BinaryExpression(+)
+  Identifier(b)
+  BinaryExpression(*)
+  Literal(2)
+  ```
+  *(Note: For unary expressions, the operator is visited before the operand by documented convention, as inorder traversal is formally defined on binary trees).*
+
+- **Postorder (Left → Right → Node):**
+  ```text
+  Identifier(a)
+  Identifier(b)
+  Literal(2)
+  BinaryExpression(*)
+  BinaryExpression(+)
+  ```
+
 ## Known limitations
 
-The renderer intentionally does not yet pan, zoom, animate, or label edges. The UI displays JSON and a tree but does not yet present tokens or traversal output. Division is parsed but never evaluated, so division-by-zero handling is deferred. Identifiers are syntax only; no variable environment exists.
+The renderer intentionally does not yet pan, zoom, or animate tree transitions. The UI displays JSON, interactive SVG, and complete traversal sequences, but does not yet display raw token streams. Division is parsed but never evaluated, so division-by-zero handling is deferred. Identifiers are syntax only; no variable environment exists.
+
 
 ## Two-week roadmap
 

@@ -73,3 +73,11 @@ These are initial decisions, not permanent constraints. Record future changes he
 - **Decision:** Keep them in separate `src/` modules with `main.js` as composition root.
 - **Rationale:** It supports focused testing and avoids DOM-coupled parser logic.
 - **Consequences:** Interfaces must remain documented and coordinated.
+
+## ADR-010: AST traversal algorithms and unary inorder convention
+
+- **Status:** Accepted (2026-10-19).
+- **Context:** Students and educators need observable representations of AST traversal orders (preorder, inorder, postorder). Binary expressions have standard left/operator/right orders, but unary expressions (e.g. `-x`) have only one operand, while inorder traversal is formally defined for binary trees.
+- **Decision:** Implement pure, non-mutating traversal algorithms in `src/traversal/traversal.js` that return deterministic arrays of structured node labels (`Identifier(name)`, `Literal(raw)`, `BinaryExpression(op)`, `UnaryExpression(op)`). For unary expressions, inorder traversal visits the operator before its operand by documented educational convention. Provide an optional `{ asNodes: true }` mode for raw AST node access.
+- **Rationale:** Structured string labels match user educational requirements directly, prevent AST mutation, and simplify test assertions. Documenting the unary inorder convention makes compiler design trade-offs transparent to students.
+- **Consequences:** Traversal functions strictly validate all AST structures, reject malformed nodes, catch circular references, and isolate UI presentation from traversal calculations.
