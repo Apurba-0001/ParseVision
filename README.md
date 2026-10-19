@@ -8,7 +8,7 @@ Expression syntax can feel opaque when it is only described by precedence rules.
 
 ## Scope and status
 
-Implemented in this base setup: a handwritten tokenizer; recursive-descent parser for numbers, identifiers, parentheses, unary `+`/`-`, and binary `+`, `-`, `*`, `/`; AST factories; preorder, inorder, and postorder traversals; a basic SVG tree; a responsive browser UI; and unit tests.
+Implemented: a handwritten tokenizer; recursive-descent parser for numbers, identifiers, parentheses, unary `+`/`-`, and binary `+`, `-`, `*`, `/`; AST factories; preorder, inorder, and postorder traversal modules; a responsive SVG AST visualizer; a responsive browser UI; and unit tests. The visualizer centers parents above their child subtrees, uses type-specific node colors, replaces stale trees on each submission, provides an accessible empty state, and permits horizontal scrolling for wide expressions.
 
 Planned work includes richer visual explanations, selectable traversal animation, more polished error guidance, accessibility review, and additional educational examples. This project does not yet evaluate expressions, persist examples, support assignments, or support a full programming language.
 
@@ -76,7 +76,7 @@ Expected AST (abbreviated):
 
 ## Known limitations
 
-The renderer is intentionally simple and does not pan, zoom, animate, or label edges. The UI displays JSON and a tree but does not yet present tokens or traversal output. Division is parsed but never evaluated, so division-by-zero handling is deferred. Identifiers are syntax only; no variable environment exists.
+The renderer intentionally does not yet pan, zoom, animate, or label edges. The UI displays JSON and a tree but does not yet present tokens or traversal output. Division is parsed but never evaluated, so division-by-zero handling is deferred. Identifiers are syntax only; no variable environment exists.
 
 ## Two-week roadmap
 

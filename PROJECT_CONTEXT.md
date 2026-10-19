@@ -60,7 +60,7 @@ Thus `a + b * 2` produces:
 
 The tokenizer converts source safely and rejects invalid characters or malformed numbers. Decimal literals allow one decimal point with digits on at least one side: `12.5`, `.5`, and `5.` are valid. A second decimal point in the same numeric literal, such as `1.2.3` or `7..`, is rejected as a lexical error with its source range. The parser consumes its tokens according to the grammar and produces only the schema above. Its `parse(source)` API returns a complete AST or throws: `ParseError` includes zero-based `position`, `start`, and exclusive `end` offsets for syntax failures, while tokenizer errors retain their lexical range. It rejects empty or malformed expressions, trailing/unexpected tokens, absent operands, and missing closing parentheses. Whitespace has no meaning. Division by zero is not syntax-invalid; it is a future evaluation/runtime concern.
 
-The visualizer must consume an AST without reparsing source, draw parent-child edges and distinguish node categories. Traversal functions must return nodes in preorder, inorder, or postorder and must not mutate the AST.
+The visualizer consumes an already-parsed AST without reparsing source. It calculates a deterministic top-down layout from subtree widths, then renders parent-child edges and style-distinguished binary, unary, identifier, and literal nodes into SVG. Parent nodes are centered over their child subtree; wide trees use a responsive `viewBox` and horizontal scroll container. Invalid AST shapes are rejected with useful errors. Traversal functions must return nodes in preorder, inorder, or postorder and must not mutate the AST.
 
 ## Acceptance criteria
 

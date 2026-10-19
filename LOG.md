@@ -60,6 +60,28 @@
 ### Next Steps
 - Implement the AST visualization milestone using SVG while keeping layout and presentation separate from parser logic.
 
+## 2026-10-19: SVG AST visualizer
+
+### Changes
+- Replaced the starter renderer with a reusable SVG visualizer that calculates deterministic top-down positions from subtree widths before touching the DOM.
+- Added rendered node labels, parent-child edge definitions, type-specific visual styles, dynamic label widths, accessible SVG labels, and explicit empty-state rendering.
+- Integrated AST JSON and SVG generation with the expression editor, syntax-error recovery, horizontal scrolling for wide trees, and a clear/reset action.
+- Added visualizer layout tests for all supported AST node kinds, node relationships, nesting, unsupported input, and every documented example expression.
+- Updated project context, README capabilities, and build milestones to reflect the SVG implementation.
+
+### Tests
+- Existing suite before visualizer changes: `npm test` completed successfully with 20 passing tests and 0 failures.
+- Final `npm test`: completed successfully with 26 passing tests, 0 failures, 0 skipped tests.
+- `node --check src/visualizer/treeRenderer.js` and `node --check src/main.js`: completed successfully.
+- `git diff --check`: completed successfully with no reported whitespace errors.
+- `npm run dev -- --host 127.0.0.1 --port 5181`: Vite reported a ready local server at `http://127.0.0.1:5181/`.
+
+### Issues
+- The isolated in-app browser could not reach the loopback Vite server and returned `ERR_CONNECTION_TIMED_OUT`, so browser visual verification was not completed in this environment. Automated layout and integration checks passed.
+
+### Next Steps
+- Implement AST traversal algorithms and present their output without coupling traversal logic to SVG rendering.
+
 ## YYYY-MM-DD: Milestone title
 
 ### Changes
