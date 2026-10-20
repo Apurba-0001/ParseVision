@@ -49,11 +49,12 @@ npm install
 
 ```bash
 npm run dev
+npm run build
 npm test
 npm run test:watch
 ```
 
-`npm run dev` starts Vite’s local development server; it prints the local URL. `npm test` runs every `tests/*.test.js` file once. `npm run test:watch` reruns tests as relevant files change.
+`npm run dev` starts Vite’s local development server. `npm run build` compiles and bundles the production distribution into `dist/`. `npm test` runs every test in `tests/` once using the Node.js built-in test runner. `npm run test:watch` reruns tests as files change.
 
 ## Example
 

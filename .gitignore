@@ -8,3 +8,25 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Keep only README.md in git/GitHub; all other markdown files stay on the local machine
+*.md
+**/*.md
+!/README.md
+!/readme.md
+
+# Testing output, reports, coverage, and generated test artifacts
+coverage/
+.nyc_output/
+test-results/
+test-reports/
+reports/
+*.lcov
+*.coverage
+*.test.log
+*test-report*
+*testing-report*
+*test-output*
+*test_output*
+junit*.xml
+*.tap
