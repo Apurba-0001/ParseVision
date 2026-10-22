@@ -1,120 +1,141 @@
-# ParseVision | AST Generator & Visualizer
+# ParseVision | AST Explorer
 
-ParseVision is an educational web application for exploring how arithmetic expressions are tokenized, parsed, and represented as Abstract Syntax Trees (ASTs). It is designed for learners who benefit from seeing the relationship between source text, tree structure, and traversal order.
+ParseVision is a professional, educational browser workspace for exploring how arithmetic expressions are tokenized, parsed, and represented as Abstract Syntax Trees (ASTs). Designed for learners, educators, and developers, it transforms abstract grammar rules and tree traversals into an interactive, visual experience.
 
-## Problem and objectives
+> *"Understand the structure behind every expression."*
 
-Expression syntax can feel opaque when it is only described by precedence rules. ParseVision makes those rules observable. Its initial objectives are to accept a small arithmetic language, build a correct plain-object AST, report syntax problems at a source position, and render the AST in a browser.
+---
 
-## Scope and status
+## Key Features
 
-Implemented: a handwritten tokenizer; recursive-descent parser for numbers, identifiers, parentheses, unary `+`/`-`, and binary `+`, `-`, `*`, `/`; AST factories; preorder, inorder, and postorder traversal algorithms; an interactive SVG AST visualizer; an educational traversal results panel with order explanations; a responsive browser UI; and comprehensive unit tests. The visualizer centers parents above their child subtrees, uses type-specific node colors, replaces stale trees on each submission, provides an accessible empty state, and permits horizontal scrolling for wide expressions. The traversal panel updates deterministically on successful parsing, clears on syntax errors, and isolates traversal failures without crashing the application.
+- **Light Neumorphic Workspace:** Restrained dual-light shadows, inset input surfaces, clear typography, and WCAG AA contrast designed specifically for code and AST exploration.
+- **Visual AST as Hero:** The SVG syntax tree is the focal center of the application, featuring interactive zoom controls (`+`, `-`, `100%` reset, `Fit` view), dynamic node count and tree depth metrics, a color-coded node legend, and direct node-click interaction to jump traversal sequences.
+- **Interactive Traversal Explorer:**
+  - Supports **Preorder**, **Inorder**, and **Postorder** traversals.
+  - Interactive playback controls: **Reset (↺)**, **Previous (◀)**, **Play / Pause (▶ / ⏸)**, **Next (▶)**, **End (⏭)**, and configurable playback speed (`0.5x`, `1x`, `2x`).
+  - **Tree-Synchronized Highlights:** The currently visited AST node pulses with an active highlight while numbered visit badges (`1`, `2`, `3`...) appear dynamically on visited tree nodes.
+  - **Bidirectional Synchronization:** Click any tree node to jump to its traversal step, or click any sequence pill to highlight its tree node.
+  - Contextual step evaluation banner showing current subexpression details.
+  - One-click **Copy Sequence** action and **Export SVG** with floating toast feedback.
+- **On-Demand "Inspect AST" Drawer:** The raw JSON representation is housed in a collapsible disclosure panel, keeping the primary workspace clean while providing formatted JSON, node metric counters, payload size, and one-click clipboard copying.
+- **Preset Example Expressions:** Rapidly load and explore canonical expressions:
+  - `a + b * 2`
+  - `(a + b) * 2`
+  - `10 - 4 - 2`
+  - `-(a + 3) * 2`
+  - `total / count + 5`
+- **Helpful Error Diagnostics:** Precise syntax and lexical errors reported with zero-based character offsets (`at character X.`) while suppressing raw stack traces. Automatic stale result clearance ensures broken expressions never show outdated trees.
+- **Keyboard Navigation & Accessibility:** Full keyboard support including `Ctrl + Enter` (or `Cmd + Enter`) to parse, interactive tree node activation (`Enter`/`Space`), ARIA roles, focus rings, and `@media (prefers-reduced-motion: reduce)` support.
 
-Planned work includes token-stream display, selectable traversal animation, more polished error guidance, accessibility review, and additional educational examples. This project does not yet evaluate expressions, persist examples, support assignments, or support a full programming language.
+---
 
+## Technology Stack
 
-## Technology stack
+- **Core:** Native JavaScript ES modules (`"type": "module"`), HTML5, and CSS3
+- **Visualization:** Scalable Vector Graphics (SVG) with pure layout calculation
+- **Development Tooling:** Vite (sole dev dependency for fast HMR and bundling)
+- **Testing:** Node.js built-in test runner (`node:test`, `node:assert/strict`)
 
-- JavaScript ES modules, HTML5, CSS3, and browser SVG
-- Node.js with npm
-- Vite, the only external dependency, for reliable local development serving
-- Node.js built-in test runner for unit tests
+---
 
-## Architecture and repository layout
+## Architecture and Repository Layout
 
-Source text flows through `tokenizer.js` → `parser.js` → plain-object AST → traversal or SVG renderer. Browser orchestration stays in `main.js` and components; parser modules contain no DOM code.
+Source text flows through `tokenizer.js` → `parser.js` → plain-object AST → tree layout or traversal algorithms. The parsing and traversal engines remain 100% decoupled from DOM/SVG rendering.
 
 ```text
 ParseVision/
 ├── index.html                 # Application entry page
 ├── src/
-│   ├── parser/                # Tokens, grammar, AST factories, parser
-│   ├── traversal/             # Traversal algorithms
-│   ├── visualizer/            # SVG layout and styling
-│   ├── components/            # Small UI builders
-│   └── main.js, styles/       # Composition and presentation
-├── tests/                     # Node built-in test-runner tests
-└── *.md                       # Context, plan, decisions, and log
+│   ├── parser/                # Tokenizer, grammar, AST factories, parser
+│   ├── traversal/             # Preorder, Inorder, and Postorder algorithms
+│   ├── visualizer/            # Deterministic SVG tree layout and styling
+│   ├── components/            # Focused DOM components:
+│   │   ├── editor.js          # Expression editor & example chips
+│   │   ├── outputPanel.js     # Hero AST canvas with zoom, fit & metrics
+│   │   ├── traversalExplorer.js # Interactive playback, speeds & visit badges
+│   │   ├── inspectAstPanel.js # Collapsible JSON inspection drawer
+│   │   ├── errorPanel.js      # Accessible inline error alerts
+│   │   └── toast.js           # Floating toast notification utility
+│   ├── styles/style.css       # Light Neumorphic Design System stylesheet
+│   └── main.js                # Composition root & event orchestration
+├── tests/                     # 72 automated tests (unit & integration)
+└── *.md                       # Design system, audit, decisions, and log
 ```
 
-## Prerequisites and installation
+---
 
-Use Node.js 20 or later and npm. From the repository root:
+## Getting Started
+
+### Prerequisites
+
+Node.js 20 or later and npm.
+
+### Installation
 
 ```bash
 npm install
 ```
 
-## Development and testing
+### Development Server
 
 ```bash
 npm run dev
+```
+
+Open `http://localhost:5173` to explore the workspace.
+
+### Production Build
+
+```bash
 npm run build
+```
+
+Compiles and bundles production-ready assets into the `dist/` directory.
+
+### Running Tests
+
+```bash
 npm test
+```
+
+Executes the complete test suite (72 tests across 7 test files) with 0 external test framework dependencies.
+
+To run tests in watch mode during development:
+
+```bash
 npm run test:watch
 ```
 
-`npm run dev` starts Vite’s local development server. `npm run build` compiles and bundles the production distribution into `dist/`. `npm test` runs every test in `tests/` once using the Node.js built-in test runner. `npm run test:watch` reruns tests as files change.
+---
 
-## Example
+## Canonical Example: `a + b * 2`
 
-Input: `a + b * 2`
-
-Expected AST (abbreviated):
-
-```js
-{
-  type: 'BinaryExpression', operator: '+',
-  left: { type: 'Identifier', name: 'a' },
-  right: {
-    type: 'BinaryExpression', operator: '*',
-    left: { type: 'Identifier', name: 'b' },
-    right: { type: 'Literal', value: 2, raw: '2' }
-  }
-}
+Tree Structure:
+```text
+        +
+       / \
+      a   *
+         / \
+        b   2
 ```
 
-`*` is nested under the right side of `+` because multiplication has higher precedence.
+Multiplication binds tighter than addition, placing `+` at the root and `*` in the right subtree.
 
-### Traversal outputs
+### Traversal Sequences
 
-- **Preorder (Node → Left → Right):**
-  ```text
-  BinaryExpression(+)
-  Identifier(a)
-  BinaryExpression(*)
-  Identifier(b)
-  Literal(2)
-  ```
+1. **Preorder (Node → Left → Right):**
+   `+` → `a` → `*` → `b` → `2`
+2. **Inorder (Left → Node → Right):**
+   `a` → `+` → `b` → `*` → `2`
+3. **Postorder (Left → Right → Node):**
+   `a` → `b` → `2` → `*` → `+`
 
-- **Inorder (Left → Node → Right):**
-  ```text
-  Identifier(a)
-  BinaryExpression(+)
-  Identifier(b)
-  BinaryExpression(*)
-  Literal(2)
-  ```
-  *(Note: For unary expressions, the operator is visited before the operand by documented convention, as inorder traversal is formally defined on binary trees).*
+*(Note: Unary operators visit operator before operand in Inorder traversal by documented compiler convention).*
 
-- **Postorder (Left → Right → Node):**
-  ```text
-  Identifier(a)
-  Identifier(b)
-  Literal(2)
-  BinaryExpression(*)
-  BinaryExpression(+)
-  ```
+---
 
-## Known limitations
+## Known Boundaries
 
-The renderer intentionally does not yet pan, zoom, or animate tree transitions. The UI displays JSON, interactive SVG, and complete traversal sequences, but does not yet display raw token streams. Division is parsed but never evaluated, so division-by-zero handling is deferred. Identifiers are syntax only; no variable environment exists.
-
-
-## Two-week roadmap
-
-Days 1–2 establish the skeleton and context; days 3–4 strengthen tokenization and AST coverage; days 5–6 deepen parser and error tests; days 7–8 improve SVG layout; days 9–10 add traversal demonstrations; days 11–12 integrate usability and error feedback; days 13–14 perform accessibility checks, final testing, and documentation review. See `BUILD_GUIDE.md` for the actionable day-by-day plan.
-
-## Future enhancements
-
-Possible approved extensions include token-stream display, traversal animation, expression evaluation with runtime diagnostics, downloadable examples, keyboard-focused visualization controls, and carefully documented grammar extensions.
+- ParseVision is an educational syntax explorer, not a runtime calculator or full programming language interpreter.
+- Division by zero (e.g. `10 / 0`) is parsed and visualized correctly as valid syntax; evaluation checks are intentionally deferred.
+- No backend, external database, or account tracking is used.

@@ -30,3 +30,7 @@ reports/
 *test_output*
 junit*.xml
 *.tap
+stitch_extracted/
+captured_screen*.png
+*.zip
+scratch/
