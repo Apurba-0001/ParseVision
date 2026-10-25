@@ -34,15 +34,8 @@ app.innerHTML = `
         <div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shadow-sm flex-shrink-0">
           <span class="material-symbols-outlined text-base">account_tree</span>
         </div>
-        <div class="flex items-baseline gap-1.5 sm:gap-2">
-          <span class="text-headline-md font-headline-md text-on-surface tracking-tight whitespace-nowrap">ParseVision</span>
-          <span class="hidden xs:inline-block text-label-code-sm font-label-code-sm px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-medium border border-outline-variant whitespace-nowrap">AST Explorer</span>
-        </div>
+        <span class="text-headline-md font-headline-md text-on-surface tracking-tight whitespace-nowrap">ParseVision</span>
       </div>
-      <!-- Navigation Links -->
-      <nav class="hidden md:flex items-center gap-5 ml-2 lg:ml-4">
-        <a class="text-primary font-headline-sm border-b-2 border-primary pb-1 transition-all duration-150 whitespace-nowrap" href="#explorer" id="nav-explorer" title="Focus expression editor">Explorer</a>
-      </nav>
     </div>
     <!-- Trailing Actions & Icons -->
     <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
@@ -78,7 +71,6 @@ const container = app.querySelector('#pv-workspace-container');
 const headerNodeCount = app.querySelector('#header-node-count');
 const headerMaxDepth = app.querySelector('#header-max-depth');
 const headerBtnExportPng = app.querySelector('#header-btn-export-png');
-const navExplorer = app.querySelector('#nav-explorer');
 const headerBtnCode = app.querySelector('#header-btn-code');
 const headerBtnSettings = app.querySelector('#header-btn-settings');
 
@@ -221,14 +213,6 @@ async function handleExportPng() {
 
 if (headerBtnExportPng) {
   headerBtnExportPng.addEventListener('click', handleExportPng);
-}
-
-
-if (navExplorer) {
-  navExplorer.addEventListener('click', (event) => {
-    event.preventDefault();
-    editor.input.focus();
-  });
 }
 
 if (headerBtnCode) {
