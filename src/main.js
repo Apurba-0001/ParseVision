@@ -52,9 +52,6 @@ app.innerHTML = `
         <button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Inspect AST (JSON)" aria-label="Inspect AST as JSON" type="button" id="header-btn-code">
           <span class="material-symbols-outlined text-sm">code</span>
         </button>
-        <button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Parser settings and grammar status" aria-label="Parser settings and grammar status" type="button" id="header-btn-settings">
-          <span class="material-symbols-outlined text-sm">settings</span>
-        </button>
       </div>
       <button class="ml-0.5 sm:ml-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-label-code-md font-label-code-md neu-micro text-secondary hover:text-primary transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex-shrink-0 whitespace-nowrap" type="button" id="header-btn-export-png" title="Export AST as PNG" aria-label="Export AST as PNG">
         <span class="material-symbols-outlined text-base">download</span>
@@ -72,7 +69,6 @@ const headerNodeCount = app.querySelector('#header-node-count');
 const headerMaxDepth = app.querySelector('#header-max-depth');
 const headerBtnExportPng = app.querySelector('#header-btn-export-png');
 const headerBtnCode = app.querySelector('#header-btn-code');
-const headerBtnSettings = app.querySelector('#header-btn-settings');
 
 // Instantiate Components:
 // 1. Toolbar & Expression Controller
@@ -218,12 +214,6 @@ if (headerBtnExportPng) {
 if (headerBtnCode) {
   headerBtnCode.addEventListener('click', () => {
     inspectAst.toggle();
-  });
-}
-
-if (headerBtnSettings) {
-  headerBtnSettings.addEventListener('click', () => {
-    showToast('Parser: Recursive descent arithmetic grammar');
   });
 }
 
