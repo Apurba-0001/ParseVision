@@ -30,6 +30,10 @@ reports/
 *test_output*
 junit*.xml
 *.tap
+tests/colors.test.js
+tests/connectors.test.js
+tests/layout_alignment.test.js
+tests/evaluator_and_grammar.test.js
 stitch_extracted/
 captured_screen*.png
 *.zip

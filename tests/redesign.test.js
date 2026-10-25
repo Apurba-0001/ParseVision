@@ -65,13 +65,13 @@ test('redesign: setTreeZoom computes scaled viewBox with clamping', () => {
   assert.equal(mockSvg.attributes.viewBox, '100 75 200 150');
   assert.equal(mockSvg.dataset.currentZoom, '2');
 
-  // Clamping at maximum 2.5x
+  // Clamping at maximum 3.0x (300%)
   setTreeZoom(mockSvg, 5);
-  assert.equal(mockSvg.dataset.currentZoom, '2.5');
+  assert.equal(mockSvg.dataset.currentZoom, '3');
 
-  // Clamping at minimum 0.5x
+  // Clamping at minimum 0.25x (25%)
   setTreeZoom(mockSvg, 0.1);
-  assert.equal(mockSvg.dataset.currentZoom, '0.5');
+  assert.equal(mockSvg.dataset.currentZoom, '0.25');
 });
 
 test('redesign: layoutAst retains astNode reference and dimensions', () => {
@@ -160,13 +160,91 @@ test('redesign: buildExportSvg generates standalone SVG representation of AST', 
   assert.ok(exportData.height > 150, 'Height should be computed with padding');
   assert.ok(exportData.svgString.includes('viewBox='), 'Should have viewBox');
   assert.ok(exportData.svgString.includes('<rect'), 'Should render background and nodes');
-  assert.ok(exportData.svgString.includes('fill="#F8F9FC"'), 'Should render solid background');
+  assert.ok(exportData.svgString.includes('fill="#FFFFFF"'), 'Should render pure white background');
   assert.ok(exportData.svgString.includes('BinaryExpression'), 'Should render binary expression subtitle');
   assert.ok(exportData.svgString.includes('>Identifier<'), 'Should render identifier subtitle');
   assert.ok(exportData.svgString.includes('>NumericLiteral<'), 'Should render numeric literal subtitle');
   assert.ok(!exportData.svgString.includes('&apos;a&apos;'), 'Should not render semantic properties in graph labels');
   assert.ok(!exportData.svgString.includes('node-step-circle'), 'Should not render step badge numbers');
   assert.ok(!exportData.svgString.includes('visit-order-badge'), 'Export SVG must not contain transient traversal badges');
+});
+
+test('redesign: node colors assign red to root and distinct colors to all node types', async () => {
+  const { buildExportSvg } = await import('../src/visualizer/treeRenderer.js');
+  const { ROOT_NODE_STYLE, NODE_STYLES } = await import('../src/visualizer/nodeStyles.js');
+
+  // Root node should have red tokens: fill #FEE2E2, border #DC2626, text #991B1B
+  assert.equal(ROOT_NODE_STYLE.fill, '#FEE2E2');
+  assert.equal(ROOT_NODE_STYLE.border, '#DC2626');
+  assert.equal(ROOT_NODE_STYLE.text, '#991B1B');
+
+  // Node type tokens
+  assert.equal(NODE_STYLES.BinaryExpression.fill, '#DBEAFE');
+  assert.equal(NODE_STYLES.BinaryExpression.border, '#2563EB');
+  assert.equal(NODE_STYLES.BinaryExpression.text, '#1E40AF');
+
+  assert.equal(NODE_STYLES.UnaryExpression.fill, '#FFEDD5');
+  assert.equal(NODE_STYLES.UnaryExpression.border, '#EA580C');
+  assert.equal(NODE_STYLES.UnaryExpression.text, '#9A3412');
+
+  assert.equal(NODE_STYLES.Identifier.fill, '#D1FAE5');
+  assert.equal(NODE_STYLES.Identifier.border, '#059669');
+  assert.equal(NODE_STYLES.Identifier.text, '#065F46');
+
+  assert.equal(NODE_STYLES.Literal.fill, '#F3E8FF');
+  assert.equal(NODE_STYLES.Literal.border, '#9333EA');
+  assert.equal(NODE_STYLES.Literal.text, '#6B21A8');
+
+  // Verify in export SVG of expression with multiplication root
+  const astMul = parse('(x + y) * -(a - 2)');
+  const exportMul = buildExportSvg(astMul);
+  assert.ok(exportMul.svgString.includes('fill="#FEE2E2" stroke="#DC2626"'), 'Root node must be red regardless of operator');
+  assert.ok(exportMul.svgString.includes('fill="#991B1B">'), 'Root node label text must be red (#991B1B)');
+  assert.ok(exportMul.svgString.includes('fill="#DBEAFE" stroke="#2563EB"'), 'Child BinaryExpression must be blue');
+  assert.ok(exportMul.svgString.includes('fill="#FFEDD5" stroke="#EA580C"'), 'Child UnaryExpression must be orange');
+  assert.ok(exportMul.svgString.includes('fill="#D1FAE5" stroke="#059669"'), 'Child Identifier must be emerald');
+  assert.ok(exportMul.svgString.includes('fill="#F3E8FF" stroke="#9333EA"'), 'Child NumericLiteral must be purple');
+});
+
+test('redesign: stress test layout on ~173 nodes, depth 12 arithmetic expression', async () => {
+  const { computeCanvasCoordinates, buildExportSvg } = await import('../src/visualizer/treeRenderer.js');
+  const { countNodes } = await import('../src/components/inspectAstPanel.js');
+
+  function makeChain(depth) {
+    if (depth <= 1) return 'x + 1';
+    return '(' + makeChain(depth - 1) + ' + 1)';
+  }
+  function makeBalanced(leafCount) {
+    if (leafCount <= 1) return 'v';
+    const left = Math.floor(leafCount / 2);
+    const right = leafCount - left;
+    return '(' + makeBalanced(left) + ' + ' + makeBalanced(right) + ')';
+  }
+
+  // 173 nodes, depth 12
+  const expr = '(' + makeChain(11) + ' + ' + makeBalanced(75) + ')';
+  const ast = parse(expr);
+  const total = countNodes(ast);
+  assert.equal(total, 173);
+
+  const coords = computeCanvasCoordinates(ast);
+  assert.equal(coords.nodes.length, 173);
+  assert.equal(coords.edges.length, 172);
+  assert.ok(coords.width > 2000, 'Canvas width accommodates large subtree widths');
+  assert.ok(coords.height > 1000, 'Canvas height accommodates 12 levels of tree');
+
+  // Verify all coordinates are finite and non-negative
+  for (const n of coords.nodes) {
+    assert.ok(Number.isFinite(n.x) && n.x > 0);
+    assert.ok(Number.isFinite(n.y) && n.y > 0);
+    assert.equal(n.width, 64);
+    assert.equal(n.height, 64);
+  }
+
+  // Verify export SVG generates cleanly for this large tree
+  const exportData = buildExportSvg(ast);
+  assert.ok(exportData);
+  assert.ok(exportData.svgString.length > 50000);
 });
 
 test('redesign: traversal order computation for all modes on nested expressions', () => {
@@ -329,5 +407,62 @@ test('redesign: createInspectAstPanel exposes required modal lifecycle methods',
   assert.equal(panel.isOpen(), false);
 });
 
+test('redesign: outputPanel defaults to inorder traversal mode', async () => {
+  const { createOutputPanel } = await import('../src/components/outputPanel.js');
 
+  const panelDefault = createOutputPanel();
+  assert.equal(panelDefault.getActiveMode(), 'inorder', 'Default mode must be inorder');
 
+  const panelExplicit = createOutputPanel({ defaultMode: 'postorder' });
+  assert.equal(panelExplicit.getActiveMode(), 'postorder', 'Explicit mode should be respected');
+});
+
+test('redesign: PRESET_EXPRESSIONS contains the exact 5 updated preset expressions', async () => {
+  const { PRESET_EXPRESSIONS } = await import('../src/components/editor.js');
+  assert.deepEqual(PRESET_EXPRESSIONS, [
+    'a + b * 2',
+    '(x + y) * (a - b)',
+    '-x * (y + 4)',
+    'a - b - c + d',
+    '(a + b) * (c - d) / 2'
+  ]);
+  assert.ok(!PRESET_EXPRESSIONS.includes('1 + 2 + 3 + 4'), 'Must not include removed preset 1 + 2 + 3 + 4');
+  assert.ok(!PRESET_EXPRESSIONS.includes('42'), 'Must not include removed preset 42');
+});
+
+test('redesign: each updated preset generates valid AST with accurate node count and depth', async () => {
+  const { PRESET_EXPRESSIONS } = await import('../src/components/editor.js');
+
+  function calculateTreeMetrics(node) {
+    let count = 0;
+    let maxDepth = 0;
+    function walk(current, depth) {
+      if (!current || typeof current !== 'object') return;
+      count += 1;
+      if (depth > maxDepth) maxDepth = depth;
+      if (current.type === 'BinaryExpression') {
+        walk(current.left, depth + 1);
+        walk(current.right, depth + 1);
+      } else if (current.type === 'UnaryExpression') {
+        walk(current.argument, depth + 1);
+      }
+    }
+    walk(node, 1);
+    return { count, maxDepth };
+  }
+
+  const expectedMetrics = {
+    'a + b * 2': { count: 5, maxDepth: 3 },
+    '(x + y) * (a - b)': { count: 7, maxDepth: 3 },
+    '-x * (y + 4)': { count: 6, maxDepth: 3 },
+    'a - b - c + d': { count: 7, maxDepth: 4 },
+    '(a + b) * (c - d) / 2': { count: 9, maxDepth: 4 }
+  };
+
+  for (const expr of PRESET_EXPRESSIONS) {
+    const ast = parse(expr);
+    assert.ok(ast, `AST must exist for preset "${expr}"`);
+    const metrics = calculateTreeMetrics(ast);
+    assert.deepEqual(metrics, expectedMetrics[expr], `Metrics for "${expr}" must match`);
+  }
+});

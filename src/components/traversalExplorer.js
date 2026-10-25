@@ -26,10 +26,10 @@ export function createTraversalExplorer(options = {}) {
       </div>
       <!-- Traversal Strategy Tabs -->
       <div class="flex items-center p-0.5 bg-[#F1F3F8] rounded-lg neu-recessed self-start md:self-auto" role="tablist">
-        <button class="tab-btn px-3 py-1 rounded text-label-code-sm font-label-code-sm neu-micro text-primary font-semibold shadow-xs cursor-pointer" data-mode="preorder" role="tab" aria-selected="true" id="tab-preorder">
+        <button class="tab-btn px-3 py-1 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface transition-all cursor-pointer" data-mode="preorder" role="tab" aria-selected="false" id="tab-preorder">
           Preorder (NLR)
         </button>
-        <button class="tab-btn px-3 py-1 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface transition-all cursor-pointer" data-mode="inorder" role="tab" aria-selected="false" id="tab-inorder">
+        <button class="tab-btn px-3 py-1 rounded text-label-code-sm font-label-code-sm neu-micro text-primary font-semibold shadow-xs cursor-pointer" data-mode="inorder" role="tab" aria-selected="true" id="tab-inorder">
           Inorder (LNR)
         </button>
         <button class="tab-btn px-3 py-1 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface transition-all cursor-pointer" data-mode="postorder" role="tab" aria-selected="false" id="tab-postorder">
@@ -117,7 +117,7 @@ export function createTraversalExplorer(options = {}) {
 
   // State
   let currentAst = null;
-  let activeMode = 'preorder'; // 'preorder' | 'inorder' | 'postorder'
+  let activeMode = options.defaultMode || 'inorder'; // 'inorder' | 'preorder' | 'postorder'
   let currentSteps = []; // [{ id, node, label, type, role }]
   let currentStepIndex = 2; // 0-based: 2 = step 3 of 5 for initial matching
   let playTimer = null;
@@ -187,7 +187,7 @@ export function createTraversalExplorer(options = {}) {
       return `Visiting unary operator <code class="font-mono px-1 py-0.5 rounded bg-white border border-[#E3E7F0] font-bold text-[#B45309]">${node.operator}</code> for argument.`;
     } else if (node.type === 'Identifier') {
       return `Evaluating variable identifier <code class="font-mono text-[#047857] font-bold">'${node.name}'</code>.`;
-    } else if (node.type === 'Literal') {
+    } else if (node.type === 'Literal' || node.type === 'NumericLiteral') {
       return `Evaluating numeric literal constant <code class="font-mono text-[#6D28D9] font-bold">'${node.raw || node.value}'</code>.`;
     }
     return `Visiting AST node ${nodeLabel(node)}.`;
@@ -217,7 +217,7 @@ export function createTraversalExplorer(options = {}) {
       let circleBg = 'bg-[#1D4ED8]';
       if (step.type === 'UnaryExpression') { colorClass = 'text-[#B45309]'; circleBg = 'bg-[#B45309]'; }
       else if (step.type === 'Identifier') { colorClass = 'text-[#047857]'; circleBg = 'bg-[#047857]'; }
-      else if (step.type === 'Literal') { colorClass = 'text-[#6D28D9]'; circleBg = 'bg-[#6D28D9]'; }
+      else if (step.type === 'Literal' || step.type === 'NumericLiteral') { colorClass = 'text-[#6D28D9]'; circleBg = 'bg-[#6D28D9]'; }
 
       const stepWrapper = document.createElement('div');
       stepWrapper.className = 'flex items-center gap-2 flex-shrink-0';

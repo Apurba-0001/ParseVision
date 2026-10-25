@@ -28,76 +28,58 @@ function calculateTreeMetrics(node) {
 
 // App Header matching Stitch design specifications
 app.innerHTML = `
-  <header class="w-full px-gutter-desktop flex items-center justify-between h-14 bg-surface border-b border-outline-variant docked full-width top-0 shadow-sm z-30 flex-shrink-0">
-    <div class="flex items-center gap-6">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
+  <header class="w-full px-3 sm:px-4 md:px-6 flex items-center justify-between h-14 bg-surface border-b border-outline-variant shadow-sm z-30 flex-shrink-0">
+    <div class="flex items-center gap-3 sm:gap-6 min-w-0">
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shadow-sm flex-shrink-0">
           <span class="material-symbols-outlined text-base">account_tree</span>
         </div>
-        <div class="flex items-baseline gap-2">
-          <span class="text-headline-md font-headline-md text-on-surface tracking-tight">ParseVision</span>
-          <span class="text-label-code-sm font-label-code-sm px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-medium border border-outline-variant">AST Explorer</span>
+        <div class="flex items-baseline gap-1.5 sm:gap-2">
+          <span class="text-headline-md font-headline-md text-on-surface tracking-tight whitespace-nowrap">ParseVision</span>
+          <span class="hidden xs:inline-block text-label-code-sm font-label-code-sm px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-medium border border-outline-variant whitespace-nowrap">AST Explorer</span>
         </div>
       </div>
       <!-- Navigation Links -->
-      <nav class="hidden md:flex items-center gap-5 ml-4">
-        <a class="text-primary font-headline-sm border-b-2 border-primary pb-1 transition-all duration-150" href="#explorer" id="nav-explorer">Explorer</a>
-        <a class="text-on-surface-variant font-headline-sm pb-1 hover:text-primary hover:bg-surface-container transition-all duration-150 cursor-pointer" href="#traversals" id="nav-traversals">Traversals</a>
-        <a class="text-on-surface-variant font-headline-sm pb-1 hover:text-primary hover:bg-surface-container transition-all duration-150 cursor-pointer" href="#grammar" id="nav-grammar">Grammar</a>
-        <a class="text-on-surface-variant font-headline-sm pb-1 hover:text-primary hover:bg-surface-container transition-all duration-150 cursor-pointer" href="#export" id="nav-export-png">Export PNG</a>
+      <nav class="hidden md:flex items-center gap-5 ml-2 lg:ml-4">
+        <a class="text-primary font-headline-sm border-b-2 border-primary pb-1 transition-all duration-150 whitespace-nowrap" href="#explorer" id="nav-explorer" title="Focus expression editor">Explorer</a>
       </nav>
     </div>
     <!-- Trailing Actions & Icons -->
-    <div class="flex items-center gap-2.5">
-      <div class="hidden lg:flex items-center gap-2 text-label-code-sm font-label-code-sm px-2.5 py-1 rounded-lg neu-recessed text-secondary mr-1" id="header-stats-pill" aria-live="polite">
+    <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+      <div class="hidden lg:flex items-center gap-2 text-label-code-sm font-label-code-sm px-2.5 py-1 rounded-lg neu-recessed text-secondary mr-1 flex-shrink-0 whitespace-nowrap" id="header-stats-pill" aria-live="polite" title="Total AST nodes and maximum tree depth">
         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-        <span>Node Count: <strong id="header-node-count">5</strong></span>
+        <span>Nodes: <strong id="header-node-count">5</strong></span>
         <span class="text-outline-variant">|</span>
-        <span>Max Depth: <strong id="header-max-depth">3</strong></span>
+        <span>Depth: <strong id="header-max-depth">3</strong></span>
       </div>
-      <div class="hidden sm:flex items-center text-label-code-sm font-label-code-sm text-secondary px-2 py-1 rounded neu-micro">
+      <div class="hidden sm:flex items-center text-label-code-sm font-label-code-sm text-secondary px-2 py-1 rounded neu-micro flex-shrink-0">
         v1.4.0
       </div>
-      <div class="flex items-center gap-1 border-l border-outline-variant pl-2.5">
-        <button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Inspect AST" aria-label="Inspect AST" type="button" id="header-btn-code">
+      <div class="flex items-center gap-1 border-l border-outline-variant pl-2 sm:pl-2.5 flex-shrink-0">
+        <button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Inspect AST (JSON)" aria-label="Inspect AST as JSON" type="button" id="header-btn-code">
           <span class="material-symbols-outlined text-sm">code</span>
         </button>
-        <button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Terminal REPL" type="button" id="header-btn-repl">
-          <span class="material-symbols-outlined text-sm">terminal</span>
-        </button>
-        <button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Workspace Settings" type="button" id="header-btn-settings">
+        <button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Parser settings and grammar status" aria-label="Parser settings and grammar status" type="button" id="header-btn-settings">
           <span class="material-symbols-outlined text-sm">settings</span>
         </button>
       </div>
-      <button class="ml-1 px-3 py-1.5 rounded-lg text-label-code-md font-label-code-md neu-micro text-secondary hover:text-primary transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" type="button" id="header-btn-export-png" title="Export AST as PNG image">
+      <button class="ml-0.5 sm:ml-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-label-code-md font-label-code-md neu-micro text-secondary hover:text-primary transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex-shrink-0 whitespace-nowrap" type="button" id="header-btn-export-png" title="Export AST as PNG" aria-label="Export AST as PNG">
         <span class="material-symbols-outlined text-base">download</span>
-        <span>Export PNG</span>
-      </button>
-      <button class="px-2.5 py-1.5 rounded-lg text-label-code-md font-label-code-md neu-micro text-secondary hover:text-primary transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" type="button" id="header-btn-clear">
-        Clear
-      </button>
-      <button class="px-3.5 py-1.5 rounded-lg text-label-code-md font-label-code-md text-on-primary neu-button-primary transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" type="button" id="header-btn-generate">
-        <span class="material-symbols-outlined text-base">play_arrow</span>
-        <span>Generate AST</span>
+        <span class="hidden sm:inline">Export PNG</span>
+        <span class="sm:hidden">Export</span>
       </button>
     </div>
   </header>
   <!-- Main Workspace -->
-  <main class="flex-1 flex flex-col p-3 md:p-4 gap-3 max-w-[1720px] w-full mx-auto overflow-y-auto" id="pv-workspace-container"></main>
+  <main class="flex-1 flex flex-col p-2.5 sm:p-3 md:p-4 gap-2.5 sm:gap-3 max-w-[1720px] w-full mx-auto overflow-y-auto" id="pv-workspace-container"></main>
 `;
 
 const container = app.querySelector('#pv-workspace-container');
 const headerNodeCount = app.querySelector('#header-node-count');
 const headerMaxDepth = app.querySelector('#header-max-depth');
 const headerBtnExportPng = app.querySelector('#header-btn-export-png');
-const navExportPng = app.querySelector('#nav-export-png');
-const navTraversals = app.querySelector('#nav-traversals');
-const navGrammar = app.querySelector('#nav-grammar');
 const navExplorer = app.querySelector('#nav-explorer');
-const headerBtnClear = app.querySelector('#header-btn-clear');
-const headerBtnGenerate = app.querySelector('#header-btn-generate');
 const headerBtnCode = app.querySelector('#header-btn-code');
-const headerBtnRepl = app.querySelector('#header-btn-repl');
 const headerBtnSettings = app.querySelector('#header-btn-settings');
 
 // Instantiate Components:
@@ -131,12 +113,14 @@ function updateExportState(hasAst) {
       headerBtnExportPng.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
       headerBtnExportPng.classList.add('cursor-pointer');
       headerBtnExportPng.removeAttribute('aria-disabled');
-      headerBtnExportPng.title = 'Export AST as PNG image';
+      headerBtnExportPng.title = 'Export AST as PNG';
+      headerBtnExportPng.setAttribute('aria-label', 'Export AST as PNG');
     } else {
       headerBtnExportPng.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
       headerBtnExportPng.classList.remove('cursor-pointer');
       headerBtnExportPng.setAttribute('aria-disabled', 'true');
       headerBtnExportPng.title = 'No AST available to export';
+      headerBtnExportPng.setAttribute('aria-label', 'Export AST as PNG (disabled)');
     }
   }
 }
@@ -201,7 +185,7 @@ function clear() {
   if (headerNodeCount) headerNodeCount.textContent = '0';
   if (headerMaxDepth) headerMaxDepth.textContent = '0';
 
-  editor.setDiagnostic(true, 'Editor cleared. Ready for input.', '0.0');
+  editor.setDiagnostic(true, 'Editor reset. Ready for input.', '0.0');
   inspectAst.clear();
   editor.input.focus();
 }
@@ -209,8 +193,6 @@ function clear() {
 // Event Listeners
 editor.button.addEventListener('click', generate);
 editor.clearButton.addEventListener('click', clear);
-headerBtnGenerate.addEventListener('click', generate);
-headerBtnClear.addEventListener('click', clear);
 
 editor.input.addEventListener('keydown', (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
@@ -224,11 +206,11 @@ async function handleExportPng() {
     showToast('No AST available to export.');
     return;
   }
-  showToast('Generating PNG export...');
+  showToast('Exporting AST as PNG...');
   try {
     const success = await exportTreeAsPng(output.container, 'parsevision-ast.png', currentAst);
     if (success) {
-      showToast('AST PNG exported successfully!');
+      showToast('AST exported as PNG successfully!');
     } else {
       showToast('Failed to export PNG.');
     }
@@ -241,28 +223,6 @@ if (headerBtnExportPng) {
   headerBtnExportPng.addEventListener('click', handleExportPng);
 }
 
-if (navExportPng) {
-  navExportPng.addEventListener('click', (event) => {
-    event.preventDefault();
-    handleExportPng();
-  });
-}
-
-if (navTraversals) {
-  navTraversals.addEventListener('click', (event) => {
-    event.preventDefault();
-    output.element.scrollIntoView({ behavior: 'smooth' });
-    output.focusTraversalControls();
-    showToast('Traversal controls active in AST Canvas');
-  });
-}
-
-if (navGrammar) {
-  navGrammar.addEventListener('click', (event) => {
-    event.preventDefault();
-    showToast('Grammar: E → E + T | E - T | T; T → T * F | T / F | F; F → +F | -F | (E) | id | num');
-  });
-}
 
 if (navExplorer) {
   navExplorer.addEventListener('click', (event) => {
@@ -277,16 +237,9 @@ if (headerBtnCode) {
   });
 }
 
-if (headerBtnRepl) {
-  headerBtnRepl.addEventListener('click', () => {
-    editor.input.focus();
-    showToast('Focus moved to expression editor');
-  });
-}
-
 if (headerBtnSettings) {
   headerBtnSettings.addEventListener('click', () => {
-    showToast('Settings: LL(1) recursive descent parser active');
+    showToast('Parser: Recursive descent arithmetic grammar');
   });
 }
 

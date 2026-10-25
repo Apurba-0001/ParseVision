@@ -81,8 +81,8 @@ export function createInspectAstPanel(options = {}) {
           </div>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
-          <span class="hidden md:inline-block text-label-code-sm font-label-code-sm text-secondary">JSON Schema v2.1</span>
-          <button class="w-8 h-8 rounded-lg flex items-center justify-center neu-micro text-secondary hover:text-error transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" id="btn-modal-close" type="button" title="Close (Escape)" aria-label="Close modal">
+          <span class="hidden md:inline-block text-label-code-sm font-label-code-sm text-secondary">Plain-Object AST</span>
+          <button class="w-8 h-8 rounded-lg flex items-center justify-center neu-micro text-secondary hover:text-error transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" id="btn-modal-close" type="button" title="Close dialog (Escape)" aria-label="Close inspection dialog">
             <span class="material-symbols-outlined text-base">close</span>
           </button>
         </div>
@@ -95,13 +95,13 @@ export function createInspectAstPanel(options = {}) {
 
       <!-- Modal Footer -->
       <div class="flex items-center justify-between p-3 sm:p-3.5 border-t border-[#E3E7F0] bg-[#F8F9FC] select-none text-label-code-sm font-label-code-sm gap-2">
-        <span class="text-secondary text-xs hidden sm:inline-block truncate">Format: Indented Plain-Object JSON</span>
+        <span class="text-secondary text-xs hidden sm:inline-block truncate">Plain-Object JSON</span>
         <div class="flex items-center gap-2 ml-auto sm:ml-0 flex-shrink-0">
-          <button class="px-3 py-1.5 rounded-lg text-label-code-sm font-label-code-sm text-on-primary neu-button-primary transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" id="btn-modal-copy-json" type="button" title="Copy formatted AST JSON to clipboard">
+          <button class="px-3 py-1.5 rounded-lg text-label-code-sm font-label-code-sm text-on-primary neu-button-primary transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" id="btn-modal-copy-json" type="button" title="Copy AST JSON to clipboard" aria-label="Copy AST JSON to clipboard">
             <span class="material-symbols-outlined text-sm">content_copy</span>
             <span>Copy JSON</span>
           </button>
-          <button class="px-3 py-1.5 rounded-lg text-label-code-sm font-label-code-sm neu-micro text-secondary hover:text-on-surface transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" id="btn-modal-done" type="button">
+          <button class="px-3 py-1.5 rounded-lg text-label-code-sm font-label-code-sm neu-micro text-secondary hover:text-on-surface transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" id="btn-modal-done" type="button" title="Close inspection dialog" aria-label="Done (close dialog)">
             Done
           </button>
         </div>

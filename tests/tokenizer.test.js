@@ -43,7 +43,73 @@ test('tokenize ignores spaces, tabs, and newlines', () => {
 });
 
 test('tokenize rejects invalid characters and malformed numeric literals with ranges', () => {
-  assert.throws(() => tokenize('a @ b'), (error) => error instanceof TokenizeError && error.start === 2 && error.end === 3 && /Invalid character/.test(error.message));
+  assert.throws(
+    () => tokenize('a @ b'),
+    (error) => error instanceof TokenizeError && error.start === 2 && error.end === 3 && error.message === 'Invalid character "@" at character 2.'
+  );
+  assert.throws(
+    () => tokenize('a $ b'),
+    (error) => error instanceof TokenizeError && error.start === 2 && error.end === 3 && error.message === 'Invalid character "$" at character 2.'
+  );
+  assert.throws(
+    () => tokenize('x # y'),
+    (error) => error instanceof TokenizeError && error.start === 2 && error.end === 3 && error.message === 'Invalid character "#" at character 2.'
+  );
+  assert.throws(
+    () => tokenize('foo & bar'),
+    (error) => error instanceof TokenizeError && error.start === 4 && error.end === 5 && error.message === 'Invalid character "&" at character 4.'
+  );
   assert.throws(() => tokenize('1.2.3'), (error) => error instanceof TokenizeError && error.start === 0 && error.end === 5 && /Malformed numeric literal/.test(error.message));
   assert.throws(() => tokenize('7..'), (error) => error instanceof TokenizeError && /Malformed numeric literal/.test(error.message));
+});
+
+test('tokenize identifies unsupported operators %, **, and ^ with descriptive errors and precise offsets', () => {
+  assert.throws(
+    () => tokenize('a % b'),
+    (error) => error instanceof TokenizeError && error.start === 2 && error.end === 3 && error.message === 'Unsupported operator "%" at character 2.'
+  );
+  assert.throws(
+    () => tokenize('a ** b'),
+    (error) => error instanceof TokenizeError && error.start === 2 && error.end === 4 && error.message === 'Unsupported operator "**" at character 2.'
+  );
+  assert.throws(
+    () => tokenize('a ^ b'),
+    (error) => error instanceof TokenizeError && error.start === 2 && error.end === 3 && error.message === 'Unsupported operator "^" at character 2.'
+  );
+  assert.throws(
+    () => tokenize('2 ** 3 ** 4'),
+    (error) => error instanceof TokenizeError && error.start === 2 && error.end === 4 && error.message === 'Unsupported operator "**" at character 2.'
+  );
+  assert.throws(
+    () => tokenize('(a + b) ** (c - d)'),
+    (error) => error instanceof TokenizeError && error.start === 8 && error.end === 10 && error.message === 'Unsupported operator "**" at character 8.'
+  );
+  assert.throws(
+    () => tokenize('a % -b'),
+    (error) => error instanceof TokenizeError && error.start === 2 && error.end === 3 && error.message === 'Unsupported operator "%" at character 2.'
+  );
+  assert.throws(
+    () => tokenize('-(a + b) % 2'),
+    (error) => error instanceof TokenizeError && error.start === 9 && error.end === 10 && error.message === 'Unsupported operator "%" at character 9.'
+  );
+  assert.throws(
+    () => tokenize('+a ** -b'),
+    (error) => error instanceof TokenizeError && error.start === 3 && error.end === 5 && error.message === 'Unsupported operator "**" at character 3.'
+  );
+  assert.throws(
+    () => tokenize('(x + 10) * 4 - 3 % 2'),
+    (error) => error instanceof TokenizeError && error.start === 17 && error.end === 18 && error.message === 'Unsupported operator "%" at character 17.'
+  );
+  assert.throws(
+    () => tokenize('** 5'),
+    (error) => error instanceof TokenizeError && error.start === 0 && error.end === 2 && error.message === 'Unsupported operator "**" at character 0.'
+  );
+  assert.throws(
+    () => tokenize('% 10'),
+    (error) => error instanceof TokenizeError && error.start === 0 && error.end === 1 && error.message === 'Unsupported operator "%" at character 0.'
+  );
+  assert.throws(
+    () => tokenize('^ 3'),
+    (error) => error instanceof TokenizeError && error.start === 0 && error.end === 1 && error.message === 'Unsupported operator "^" at character 0.'
+  );
 });

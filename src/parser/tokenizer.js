@@ -1,3 +1,5 @@
+import { UNSUPPORTED_OPERATORS } from './grammar.js';
+
 const OPERATORS = new Set(['+', '-', '*', '/']);
 const PARENTHESES = new Set(['(', ')']);
 const IDENTIFIER_START = /[A-Za-z_]/;
@@ -52,6 +54,9 @@ export function tokenize(source) {
   while (index < source.length) {
     const character = source[index];
     if (/\s/.test(character)) { index += 1; continue; }
+    if (character === '*' && source[index + 1] === '*') {
+      throw new TokenizeError('Unsupported operator "**"', index, index + 2);
+    }
     if (OPERATORS.has(character)) {
       tokens.push({ type: 'OPERATOR', value: character, start: index, end: index + 1 });
       index += 1;
@@ -74,6 +79,9 @@ export function tokenize(source) {
       while (IDENTIFIER_PART.test(source[index] ?? '')) index += 1;
       tokens.push({ type: 'IDENTIFIER', value: source.slice(start, index), start, end: index });
       continue;
+    }
+    if (UNSUPPORTED_OPERATORS.has(character)) {
+      throw new TokenizeError(`Unsupported operator "${character}"`, index, index + 1);
     }
     throw new TokenizeError(`Invalid character "${character}"`, index);
   }

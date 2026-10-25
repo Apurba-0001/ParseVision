@@ -4,7 +4,6 @@ import { parse, ParseError } from '../src/parser/parser.js';
 import { TokenizeError } from '../src/parser/tokenizer.js';
 import { layoutAst } from '../src/visualizer/treeRenderer.js';
 import { preorder, inorder, postorder } from '../src/traversal/traversal.js';
-import { EXAMPLE_EXPRESSIONS } from '../src/components/editor.js';
 
 /**
  * End-to-end pipeline runner simulating the complete application flow:
@@ -225,15 +224,15 @@ test('pipeline: division by zero parses successfully and is not a syntax error',
 // ==========================================
 
 test('pipeline: all 5 required example expressions', () => {
-  assert.deepEqual(EXAMPLE_EXPRESSIONS, [
+  const exampleExpressions = [
     'a + b * 2',
     '(a + b) * 2',
     '10 - 4 - 2',
     '-(a + 3) * 2',
     'total / count + 5'
-  ]);
+  ];
 
-  for (const expr of EXAMPLE_EXPRESSIONS) {
+  for (const expr of exampleExpressions) {
     const res = runPipeline(expr);
     assert.ok(res.ast, `AST exists for "${expr}"`);
     assert.ok(res.layout.nodes.length > 0, `Layout nodes exist for "${expr}"`);

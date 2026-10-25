@@ -1,6 +1,6 @@
 import { binaryExpression, identifier, literal, unaryExpression } from './ast.js';
 import { tokenize } from './tokenizer.js';
-import { ADDITIVE_OPERATORS, MULTIPLICATIVE_OPERATORS, UNARY_OPERATORS } from './grammar.js';
+import { ADDITIVE_OPERATORS, MULTIPLICATIVE_OPERATORS, UNARY_OPERATORS, UNSUPPORTED_OPERATORS } from './grammar.js';
 
 export class ParseError extends SyntaxError {
   constructor(message, token) {
@@ -37,25 +37,44 @@ export class Parser {
     return expression;
   }
 
-  parseExpression() { return this.parseAdditive(); }
-
-  parseAdditive() {
-    let node = this.parseMultiplicative();
-    let operator;
-    while ((operator = this.match(ADDITIVE_OPERATORS))) {
-      node = binaryExpression(operator.value, node, this.parseMultiplicative());
-    }
-    return node;
+  parseExpression() {
+    const term = this.parseTerm();
+    return this.parseEPrime(term);
   }
 
-  parseMultiplicative() {
-    let node = this.parseUnary();
-    let operator;
-    while ((operator = this.match(MULTIPLICATIVE_OPERATORS))) {
-      node = binaryExpression(operator.value, node, this.parseUnary());
+  parseEPrime(left) {
+    const operator = this.match(ADDITIVE_OPERATORS);
+    if (operator) {
+      const right = this.parseTerm();
+      const node = binaryExpression(operator.value, left, right);
+      return this.parseEPrime(node);
     }
-    return node;
+    if (this.peek() && UNSUPPORTED_OPERATORS.has(this.peek().value)) {
+      throw this.error(`Unsupported operator "${this.peek().value}"`);
+    }
+    return left;
   }
+
+  parseTerm() {
+    const unary = this.parseUnary();
+    return this.parseTPrime(unary);
+  }
+
+  parseTPrime(left) {
+    const operator = this.match(MULTIPLICATIVE_OPERATORS);
+    if (operator) {
+      const right = this.parseUnary();
+      const node = binaryExpression(operator.value, left, right);
+      return this.parseTPrime(node);
+    }
+    if (this.peek() && UNSUPPORTED_OPERATORS.has(this.peek().value)) {
+      throw this.error(`Unsupported operator "${this.peek().value}"`);
+    }
+    return left;
+  }
+
+  parseAdditive() { return this.parseExpression(); }
+  parseMultiplicative() { return this.parseTerm(); }
 
   parseUnary() {
     const operator = this.match(UNARY_OPERATORS);
@@ -82,8 +101,12 @@ export class Parser {
       this.advance();
       return expression;
     }
+    if (UNSUPPORTED_OPERATORS.has(token.value)) {
+      throw this.error(`Unsupported operator "${token.value}"`, token);
+    }
     throw this.error(`Expected a number, identifier, or opening parenthesis; found "${token.value || 'end of input'}"`, token);
   }
 }
 
 export function parse(source) { return new Parser(tokenize(source)).parse(); }
+export { evaluate } from './evaluator.js';

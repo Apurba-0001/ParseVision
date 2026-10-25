@@ -54,10 +54,29 @@
   background-size: 18px 18px;
 }
 
-/* Active AST selection glow */
+/* Active/Selected AST node outer focus ring - preserves underlying node type border and fill */
 .node-selected {
-  border: 1.5px solid #416FD0 !important;
-  box-shadow: 0 0 0 3px rgba(65, 111, 208, 0.25), 2px 2px 6px rgba(166, 178, 201, 0.35), -2px -2px 6px #FFFFFF !important;
+  outline: 2.5px solid #2156B5 !important;
+  outline-offset: 2.5px !important;
+  box-shadow: 0 0 0 5px rgba(33, 86, 181, 0.25), 0 4px 10px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Traversal active step: animated pulsing outer glow while preserving base type color */
+.node-active-step {
+  outline: 3px solid #2156B5 !important;
+  outline-offset: 2.5px !important;
+  box-shadow: 0 0 0 6px rgba(33, 86, 181, 0.3), 0 0 16px rgba(33, 86, 181, 0.35) !important;
+}
+
+/* AST Node Keyboard Focus Indicator */
+.ast-tree-node:focus-visible {
+  outline: none;
+}
+
+.ast-tree-node:focus-visible .node-badge-card {
+  outline: 2.5px solid #2156B5 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(33, 86, 181, 0.35) !important;
 }
 
 /* Material Symbols icon helper */
@@ -103,18 +122,19 @@
   transform: translateY(0);
 }
 
-/* Remove default summary marker in Chrome/Safari/Edge */
-details > summary::-webkit-details-marker {
-  display: none;
-}
 
-details > summary {
-  list-style: none;
-}
-
-/* SVG Edge Transitions */
+/* SVG Edge Transitions & Base Styling */
 .tree-edges-group path {
+  stroke: #94A3B8;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  fill: none;
   transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.tree-edges-group path.stroke-primary {
+  stroke: #2156B5;
+  stroke-width: 2.5px;
 }
 
 /* Custom Scrollbars */
