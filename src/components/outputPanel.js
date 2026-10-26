@@ -15,97 +15,96 @@ export function createOutputPanel(options = {}) {
       svg: null,
       container: null,
       viewport: null,
-      setMetrics: () => {},
-      resetZoom: () => {},
-      centerTree: () => {},
-      updateAst: () => {},
-      clearAst: () => {},
-      setMode: () => {},
+      setMetrics: () => { },
+      resetZoom: () => { },
+      centerTree: () => { },
+      updateAst: () => { },
+      clearAst: () => { },
+      setMode: () => { },
       getActiveMode: () => options.defaultMode || 'inorder',
-      startTraversal: () => {},
-      pauseTraversal: () => {},
-      resetTraversal: () => {},
-      focusTraversalControls: () => {},
-      cleanup: () => {}
+      startTraversal: () => { },
+      pauseTraversal: () => { },
+      resetTraversal: () => { },
+      focusTraversalControls: () => { },
+      cleanup: () => { }
     };
   }
 
   const section = document.createElement('section');
-  section.className = 'relative neu-pane rounded-xl p-3 md:p-4 flex flex-col flex-1 min-h-[460px] md:min-h-[520px] bg-grid-dots overflow-hidden';
+  section.className = 'relative neu-pane rounded-xl p-3 md:p-4 flex flex-col flex-1 min-h-[440px] sm:min-h-[400px] bg-grid-dots overflow-hidden w-full';
   section.setAttribute('aria-label', 'AST Visualization Canvas');
 
   const onNodeClickCallback = typeof options.onNodeClick === 'function' ? options.onNodeClick : null;
 
   section.innerHTML = `
     <!-- Top Canvas Bar with Embedded Traversal Toolbar & Viewport Controls -->
-    <div class="flex flex-wrap items-center justify-between gap-2.5 z-10 select-none pb-2.5 border-b border-[#E3E7F0]/60 flex-shrink-0">
-      <div class="flex items-center gap-2 flex-shrink-0">
-        <span class="text-headline-sm font-headline-sm text-on-surface">Syntax Tree Graph</span>
-        <span class="text-label-code-sm font-label-code-sm px-2 py-0.5 rounded bg-surface-container text-secondary border border-outline-variant whitespace-nowrap" id="viz-hierarchy-badge" title="Tree layout">Tree Layout</span>
+    <div class="flex flex-wrap items-center justify-between gap-3 z-10 select-none pb-3 border-b border-[#E3E7F0]/80 flex-shrink-0">
+      <div class="flex items-center gap-2.5 flex-shrink-0">
+        <span class="text-headline-sm font-headline-sm text-on-surface font-semibold tracking-tight">Syntax Tree Graph</span>
+        <span class="text-label-code-sm font-label-code-sm px-2.5 py-1 rounded-md bg-surface-container text-secondary border border-outline-variant whitespace-nowrap" id="viz-hierarchy-badge" title="Tree layout">Tree Layout</span>
       </div>
 
       <!-- Integrated Controls Cluster -->
-      <div class="flex flex-wrap items-center gap-2 max-w-full">
-        <!-- Compact Traversal Toolbar -->
-        <div class="flex flex-wrap sm:flex-nowrap items-center gap-1.5 bg-[#F8F9FC] p-1 rounded-lg border border-[#E3E7F0] shadow-sm max-w-full" role="toolbar" aria-label="AST Traversal Controls">
+      <div class="flex flex-wrap items-center gap-3 sm:gap-4 max-w-full">
+        <!-- Traversal Toolbar Group -->
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-[#F8F9FC] p-1.5 rounded-lg border border-[#E3E7F0] shadow-sm max-w-full" role="toolbar" aria-label="AST Traversal Controls">
           <!-- Traversal Strategy Selector -->
           <div class="flex items-center p-0.5 bg-[#F1F3F8] rounded-md neu-recessed flex-shrink-0" role="radiogroup" aria-label="Traversal Mode">
-            <button class="trav-mode-btn px-2.5 py-0.5 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" data-mode="preorder" role="radio" aria-checked="false" id="btn-mode-preorder" title="Preorder (Node → Left → Right)" aria-label="Preorder traversal" type="button">
+            <button class="trav-mode-btn px-3 h-8 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" data-mode="preorder" role="radio" aria-checked="false" id="btn-mode-preorder" title="Preorder (Node → Left → Right)" aria-label="Preorder traversal" type="button">
               Preorder
             </button>
-            <button class="trav-mode-btn px-2.5 py-0.5 rounded text-label-code-sm font-label-code-sm neu-micro text-primary font-semibold shadow-xs cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" data-mode="inorder" role="radio" aria-checked="true" id="btn-mode-inorder" title="Inorder (Left → Node → Right)" aria-label="Inorder traversal" type="button">
+            <button class="trav-mode-btn px-3 h-8 rounded text-label-code-sm font-label-code-sm neu-micro text-primary font-semibold shadow-xs cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" data-mode="inorder" role="radio" aria-checked="true" id="btn-mode-inorder" title="Inorder (Left → Node → Right)" aria-label="Inorder traversal" type="button">
               Inorder
             </button>
-            <button class="trav-mode-btn px-2.5 py-0.5 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" data-mode="postorder" role="radio" aria-checked="false" id="btn-mode-postorder" title="Postorder (Left → Right → Node)" aria-label="Postorder traversal" type="button">
+            <button class="trav-mode-btn px-3 h-8 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" data-mode="postorder" role="radio" aria-checked="false" id="btn-mode-postorder" title="Postorder (Left → Right → Node)" aria-label="Postorder traversal" type="button">
               Postorder
             </button>
           </div>
 
-          <div class="hidden sm:block h-4 w-px bg-outline-variant/60 mx-0.5 flex-shrink-0"></div>
+          <div class="hidden sm:block h-5 w-px bg-outline-variant/60 mx-0.5 flex-shrink-0"></div>
 
           <!-- Traversal Playback Controls Group -->
-          <div class="flex items-center gap-1.5 flex-shrink-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <!-- Play / Pause / Replay Button -->
-            <button class="px-2.5 h-7 rounded neu-button-primary text-white flex items-center gap-1 text-label-code-sm font-label-code-sm font-medium transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" id="btn-canvas-play" type="button" title="Play traversal animation" aria-label="Play traversal animation">
+            <button class="px-3.5 h-8 rounded-lg neu-button-primary text-white flex items-center gap-1.5 text-label-code-sm font-label-code-sm font-medium transition-all active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" id="btn-canvas-play" type="button" title="Play traversal animation" aria-label="Play traversal animation">
               <span class="material-symbols-outlined text-base leading-none" id="icon-canvas-play">play_arrow</span>
               <span id="label-canvas-play">Play</span>
             </button>
 
-            <!-- Compact Progress Indicator (e.g. 0 / 5) -->
-            <div class="flex items-center px-2 h-7 rounded neu-recessed text-label-code-sm font-label-code-sm font-mono text-secondary flex-shrink-0" id="trav-progress-indicator" title="Traversal progress (step / total nodes)" aria-live="polite">
+            <!-- Traversal Progress Indicator (e.g. 0 / 5) -->
+            <div class="flex items-center justify-center px-3 h-8 rounded-lg neu-recessed text-label-code-sm font-label-code-sm font-mono text-secondary flex-shrink-0 whitespace-nowrap" id="trav-progress-indicator" title="Traversal progress (step / total nodes)" aria-live="polite">
               <span id="trav-progress-text">0 / 5</span>
             </div>
 
-            <!-- Compact Playback Speed Selector -->
-            <div class="flex items-center gap-0.5 pl-0.5 flex-shrink-0" title="Playback speed">
-              <button class="trav-speed-btn px-1.5 h-6 rounded text-[11px] font-mono neu-micro-pressed text-primary font-bold cursor-pointer transition-all focus:outline-none" data-speed="1" type="button" title="1x Normal speed" aria-label="1x playback speed" aria-pressed="true">1x</button>
-              <button class="trav-speed-btn px-1.5 h-6 rounded text-[11px] font-mono text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none" data-speed="1.5" type="button" title="1.5x Fast speed" aria-label="1.5x playback speed" aria-pressed="false">1.5x</button>
-              <button class="trav-speed-btn px-1.5 h-6 rounded text-[11px] font-mono text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none" data-speed="2" type="button" title="2x High speed" aria-label="2x playback speed" aria-pressed="false">2x</button>
+            <!-- Playback Speed Selector -->
+            <div class="flex items-center gap-1 pl-0.5 flex-shrink-0" title="Playback speed">
+              <button class="trav-speed-btn px-2 h-8 rounded text-label-code-sm font-mono neu-micro-pressed text-primary font-bold cursor-pointer transition-all focus:outline-none" data-speed="1" type="button" title="1x Normal speed" aria-label="1x playback speed" aria-pressed="true">1x</button>
+              <button class="trav-speed-btn px-2 h-8 rounded text-label-code-sm font-mono text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none" data-speed="1.5" type="button" title="1.5x Fast speed" aria-label="1.5x playback speed" aria-pressed="false">1.5x</button>
+              <button class="trav-speed-btn px-2 h-8 rounded text-label-code-sm font-mono text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none" data-speed="2" type="button" title="2x High speed" aria-label="2x playback speed" aria-pressed="false">2x</button>
             </div>
           </div>
         </div>
 
-        <!-- Viewport Controls (Zoom / Fit / Center) -->
-        <div class="flex items-center gap-1 bg-[#F8F9FC] p-1 rounded-lg border border-[#E3E7F0] shadow-sm flex-shrink-0">
-          <button class="w-7 h-7 rounded flex items-center justify-center neu-micro text-secondary hover:text-primary cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Zoom in (+25%)" type="button" id="btn-tree-zoom-in" aria-label="Zoom in">
-            <span class="material-symbols-outlined text-sm">add</span>
+        <div class="hidden lg:block h-6 w-px bg-outline-variant/60 flex-shrink-0"></div>
+
+        <!-- Viewport Controls Group (Zoom) -->
+        <div class="flex items-center gap-1.5 bg-[#F8F9FC] p-1.5 rounded-lg border border-[#E3E7F0] shadow-sm flex-shrink-0" role="group" aria-label="Canvas Zoom Controls">
+          <button class="w-8 h-8 rounded-lg flex items-center justify-center neu-micro text-secondary hover:text-primary transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Zoom in (+25%)" type="button" id="btn-tree-zoom-in" aria-label="Zoom in">
+            <span class="material-symbols-outlined text-base">add</span>
           </button>
-          <button class="w-7 h-7 rounded flex items-center justify-center neu-micro text-secondary hover:text-primary cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Zoom out (-25%)" type="button" id="btn-tree-zoom-out" aria-label="Zoom out">
-            <span class="material-symbols-outlined text-sm">remove</span>
+          <button class="w-8 h-8 rounded-lg flex items-center justify-center neu-micro text-secondary hover:text-primary transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Zoom out (-25%)" type="button" id="btn-tree-zoom-out" aria-label="Zoom out">
+            <span class="material-symbols-outlined text-base">remove</span>
           </button>
-          <div class="h-4 w-px bg-outline-variant/60 mx-0.5"></div>
-          <button class="px-2 h-7 rounded flex items-center justify-center neu-micro text-label-code-sm font-label-code-sm text-secondary hover:text-primary cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Reset zoom to 100%" type="button" id="btn-tree-zoom-reset" aria-label="Reset zoom to 100%">
+          <div class="h-5 w-px bg-outline-variant/60 mx-0.5"></div>
+          <button class="px-2.5 h-8 rounded-lg flex items-center justify-center neu-micro text-label-code-sm font-label-code-sm font-mono text-secondary hover:text-primary transition-all active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary whitespace-nowrap" title="Reset zoom to 100%" type="button" id="btn-tree-zoom-reset" aria-label="Reset zoom to 100%">
             100%
-          </button>
-          <button class="w-7 h-7 rounded flex items-center justify-center neu-micro text-secondary hover:text-primary cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Fit tree to view" type="button" id="btn-tree-center" aria-label="Fit tree to view">
-            <span class="material-symbols-outlined text-sm">filter_center_focus</span>
           </button>
         </div>
       </div>
     </div>
 
     <!-- Interactive Canvas Coordinate Plane -->
-    <div class="relative flex-1 w-full min-h-[320px] md:min-h-[380px] overflow-hidden select-none cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg" id="tree-canvas-viewport" tabindex="0" role="region" aria-label="AST canvas viewport (drag to pan, Ctrl+Wheel to zoom)">
+    <div class="relative flex-1 min-h-0 w-full overflow-hidden select-none cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg" id="tree-canvas-viewport" tabindex="0" role="region" aria-label="AST canvas viewport (drag to pan, Ctrl+Wheel to zoom)">
       <div class="absolute top-0 left-0 origin-top-left select-none pointer-events-auto" id="tree-coordinate-plane">
         <!-- SVG Connecting Lines -->
         <svg class="absolute inset-0 w-full h-full pointer-events-none overflow-visible" id="tree-svg-edges" xmlns="http://www.w3.org/2000/svg">
@@ -122,8 +121,8 @@ export function createOutputPanel(options = {}) {
       </div>
     </div>
 
-    <!-- Canvas Footer: Legend of AST Node Classes & Inspection Prompt -->
-    <div class="pt-2 border-t border-[#E3E7F0] flex flex-wrap items-center justify-between gap-2 z-10 text-label-code-sm font-label-code-sm flex-shrink-0">
+    <!-- Canvas Footer: Legend of AST Node Classes -->
+    <div class="pt-2.5 border-t border-[#E3E7F0] flex flex-wrap items-center justify-between gap-2 z-10 text-label-code-sm font-label-code-sm flex-shrink-0">
       <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <span class="text-secondary font-medium select-none flex-shrink-0">Node Types:</span>
         <div class="flex flex-wrap items-center gap-1.5" id="node-schema-legend">
@@ -131,10 +130,6 @@ export function createOutputPanel(options = {}) {
             <span class="px-2 py-0.5 rounded border ${item.classNames} select-none whitespace-nowrap" style="background-color: ${item.fill}; color: ${item.text}; border-color: ${item.border};">${item.label}</span>
           `).join('')}
         </div>
-      </div>
-      <div class="text-secondary text-xs flex items-center gap-1 select-none flex-shrink-0 ml-auto sm:ml-0" id="node-inspector-tip">
-        <span class="material-symbols-outlined text-sm">touch_app</span>
-        <span>Click any node to inspect properties</span>
       </div>
     </div>
   `;
@@ -149,7 +144,6 @@ export function createOutputPanel(options = {}) {
   const btnZoomIn = section.querySelector('#btn-tree-zoom-in');
   const btnZoomOut = section.querySelector('#btn-tree-zoom-out');
   const btnZoomReset = section.querySelector('#btn-tree-zoom-reset');
-  const btnCenter = section.querySelector('#btn-tree-center');
 
   // Traversal controls
   const modeButtons = section.querySelectorAll('.trav-mode-btn');
@@ -258,7 +252,6 @@ export function createOutputPanel(options = {}) {
     zoomAt(currentZoom - 0.25, anchorX, anchorY);
   });
   btnZoomReset.addEventListener('click', resetZoom);
-  btnCenter.addEventListener('click', centerTree);
 
   // Wheel / Trackpad Scroll and Ctrl+Wheel Zoom scoped exclusively to AST canvas
   function handleWheel(e) {
@@ -301,7 +294,7 @@ export function createOutputPanel(options = {}) {
     startPanY = panY;
     try {
       canvasViewport.setPointerCapture(e.pointerId);
-    } catch {}
+    } catch { }
   }
 
   function handlePointerMove(e) {
@@ -319,7 +312,7 @@ export function createOutputPanel(options = {}) {
     isPanning = false;
     try {
       canvasViewport.releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch { }
     if (hasDragged) {
       setTimeout(() => { hasDragged = false; }, 50);
     }
@@ -330,7 +323,7 @@ export function createOutputPanel(options = {}) {
     isPanning = false;
     try {
       canvasViewport.releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch { }
   }
 
   canvasViewport.addEventListener('pointerdown', handlePointerDown);
@@ -535,9 +528,9 @@ export function createOutputPanel(options = {}) {
       btn.setAttribute('aria-checked', String(isTarget));
       btn.setAttribute('tabindex', isTarget ? '0' : '-1');
       if (isTarget) {
-        btn.className = 'trav-mode-btn px-2.5 py-0.5 rounded text-label-code-sm font-label-code-sm neu-micro text-primary font-semibold shadow-xs cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+        btn.className = 'trav-mode-btn px-3 h-8 rounded text-label-code-sm font-label-code-sm neu-micro text-primary font-semibold shadow-xs cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
       } else {
-        btn.className = 'trav-mode-btn px-2.5 py-0.5 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+        btn.className = 'trav-mode-btn px-3 h-8 rounded text-label-code-sm font-label-code-sm text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
       }
     });
 
@@ -558,9 +551,9 @@ export function createOutputPanel(options = {}) {
       const isSelected = btnSpeed === speed;
       btn.setAttribute('aria-pressed', String(isSelected));
       if (isSelected) {
-        btn.className = 'trav-speed-btn px-1.5 h-6 rounded text-[11px] font-mono neu-micro-pressed text-primary font-bold cursor-pointer transition-all focus:outline-none';
+        btn.className = 'trav-speed-btn px-2 h-8 rounded text-label-code-sm font-mono neu-micro-pressed text-primary font-bold cursor-pointer transition-all focus:outline-none';
       } else {
-        btn.className = 'trav-speed-btn px-1.5 h-6 rounded text-[11px] font-mono text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none';
+        btn.className = 'trav-speed-btn px-2 h-8 rounded text-label-code-sm font-mono text-secondary hover:text-on-surface cursor-pointer transition-all focus:outline-none';
       }
     });
 
@@ -598,7 +591,7 @@ export function createOutputPanel(options = {}) {
     });
   });
 
-  const modeRadiogroup = section.querySelector('[role="radiogroup"][aria-label="Tree Traversal Algorithm"]');
+  const modeRadiogroup = section.querySelector('[role="radiogroup"]');
   function handleRadiogroupKeydown(e) {
     const modeArray = Array.from(modeButtons);
     const currentIndex = modeArray.findIndex((b) => b.getAttribute('data-mode') === activeMode);
@@ -708,11 +701,15 @@ export function createOutputPanel(options = {}) {
   }
 
   let resizeObserver = null;
+  let resizeRaf = null;
   if (typeof ResizeObserver !== 'undefined' && canvasViewport) {
     resizeObserver = new ResizeObserver(() => {
-      if (currentAst && !isPanning && !hasDragged) {
-        fitToView();
-      }
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => {
+        if (currentAst && !isPanning && !hasDragged) {
+          fitToView();
+        }
+      });
     });
     resizeObserver.observe(canvasViewport);
   }
@@ -723,6 +720,10 @@ export function createOutputPanel(options = {}) {
       playTimer = null;
     }
     isPlaying = false;
+    if (resizeRaf) {
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = null;
+    }
     if (resizeObserver) {
       resizeObserver.disconnect();
       resizeObserver = null;

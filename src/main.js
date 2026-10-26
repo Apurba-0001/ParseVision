@@ -45,23 +45,20 @@ app.innerHTML = `
         <span class="text-outline-variant">|</span>
         <span>Depth: <strong id="header-max-depth">3</strong></span>
       </div>
-      <div class="hidden sm:flex items-center text-label-code-sm font-label-code-sm text-secondary px-2 py-1 rounded neu-micro flex-shrink-0">
-        v1.4.0
-      </div>
-      <div class="flex items-center gap-1 border-l border-outline-variant pl-2 sm:pl-2.5 flex-shrink-0">
-        <button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Inspect AST (JSON)" aria-label="Inspect AST as JSON" type="button" id="header-btn-code">
+      <div class="flex items-center gap-1 sm:gap-1.5 border-l border-outline-variant pl-2 sm:pl-2.5 flex-shrink-0">
+        <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant neu-micro transition-all duration-150 active:scale-95 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title="Inspect AST (JSON)" aria-label="Inspect AST as JSON" type="button" id="header-btn-code">
           <span class="material-symbols-outlined text-sm">code</span>
         </button>
+        <button class="ml-0.5 sm:ml-1 px-2.5 sm:px-3 h-8 rounded-lg text-label-code-md font-label-code-md neu-micro text-secondary hover:text-primary transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex-shrink-0 whitespace-nowrap" type="button" id="header-btn-export-png" title="Export AST as PNG" aria-label="Export AST as PNG">
+          <span class="material-symbols-outlined text-base">download</span>
+          <span class="hidden sm:inline">Export PNG</span>
+          <span class="sm:hidden">Export</span>
+        </button>
       </div>
-      <button class="ml-0.5 sm:ml-1 px-2.5 sm:px-3 py-1.5 rounded-lg text-label-code-md font-label-code-md neu-micro text-secondary hover:text-primary transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary flex-shrink-0 whitespace-nowrap" type="button" id="header-btn-export-png" title="Export AST as PNG" aria-label="Export AST as PNG">
-        <span class="material-symbols-outlined text-base">download</span>
-        <span class="hidden sm:inline">Export PNG</span>
-        <span class="sm:hidden">Export</span>
-      </button>
     </div>
   </header>
   <!-- Main Workspace -->
-  <main class="flex-1 flex flex-col p-2.5 sm:p-3 md:p-4 gap-2.5 sm:gap-3 max-w-[1720px] w-full mx-auto overflow-y-auto" id="pv-workspace-container"></main>
+  <main class="flex-1 flex flex-col p-3 sm:p-4 md:px-6 md:py-4 gap-3 sm:gap-4 w-full min-h-0 overflow-y-auto" id="pv-workspace-container"></main>
 `;
 
 const container = app.querySelector('#pv-workspace-container');
@@ -84,7 +81,6 @@ const output = createOutputPanel();
 const inspectAst = createInspectAstPanel({
   triggerButton: headerBtnCode
 });
-inspectAst.setTriggerButton(headerBtnCode);
 
 // Mount panels to workspace container (bottom inspector completely removed from page layout)
 container.append(editor.element, output.element);

@@ -1,4 +1,4 @@
-import { NODE_DIMENSIONS, NODE_STYLES, ROOT_NODE_STYLE, TRAVERSAL_STYLES, getNodeStyle } from './nodeStyles.js';
+import { NODE_DIMENSIONS, getNodeStyle } from './nodeStyles.js';
 
 const SUPPORTED_TYPES = new Set(['BinaryExpression', 'UnaryExpression', 'Identifier', 'Literal', 'NumericLiteral']);
 
@@ -39,10 +39,6 @@ export function nodeLabel(node) {
   return node.operator;
 }
 
-function nodeWidth() {
-  return NODE_DIMENSIONS.width;
-}
-
 function buildSubtree(node, depth, path, ancestors) {
   assert(!ancestors.has(node), 'AST cannot contain a circular node reference.');
   const nextAncestors = new Set(ancestors);
@@ -56,8 +52,8 @@ function buildSubtree(node, depth, path, ancestors) {
     type: node.type,
     label,
     depth,
-    width: nodeWidth(label),
-    subtreeWidth: Math.max(nodeWidth(label), childrenWidth),
+    width: NODE_DIMENSIONS.width,
+    subtreeWidth: Math.max(NODE_DIMENSIONS.width, childrenWidth),
     children,
     astNode: node
   };
@@ -204,7 +200,7 @@ export function generateBezierPath(parentX, parentY, childX, childY) {
 /**
  * Render empty state in the canvas.
  */
-export function renderEmptyTree(container, message = 'Enter an arithmetic expression and select Generate AST to view its tree.') {
+export function renderEmptyTree(container) {
   if (!container) return;
   const plane = container.querySelector('#tree-coordinate-plane') || container;
   const nodesContainer = plane.querySelector('#tree-nodes-container');
@@ -212,12 +208,7 @@ export function renderEmptyTree(container, message = 'Enter an arithmetic expres
 
   if (edgesGroup) edgesGroup.innerHTML = '';
   if (nodesContainer) {
-    nodesContainer.innerHTML = `
-      <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 text-secondary select-none">
-        <span class="material-symbols-outlined text-4xl text-outline-variant mb-2">account_tree</span>
-        <p class="text-label-code-md font-label-code-md">${message}</p>
-      </div>
-    `;
+    nodesContainer.innerHTML = '';
   }
 }
 

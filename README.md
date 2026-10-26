@@ -46,19 +46,17 @@ Source text flows through `tokenizer.js` → `parser.js` → plain-object AST �
 ParseVision/
 ├── index.html                 # Application entry page
 ├── src/
-│   ├── parser/                # Tokenizer, grammar, AST factories, parser
+│   ├── parser/                # Tokenizer, grammar, AST factories, parser, evaluator
 │   ├── traversal/             # Preorder, Inorder, and Postorder algorithms
 │   ├── visualizer/            # Deterministic SVG tree layout and styling
 │   ├── components/            # Focused DOM components:
-│   │   ├── editor.js          # Expression editor & example chips
-│   │   ├── outputPanel.js     # Hero AST canvas with zoom, fit & metrics
-│   │   ├── traversalExplorer.js # Interactive playback, speeds & visit badges
-│   │   ├── inspectAstPanel.js # Collapsible JSON inspection drawer
-│   │   ├── errorPanel.js      # Accessible inline error alerts
+│   │   ├── editor.js          # Expression editor, diagnostics & presets
+│   │   ├── outputPanel.js     # Hero AST canvas, traversal controls & zoom
+│   │   ├── inspectAstPanel.js # Collapsible JSON inspection modal
 │   │   └── toast.js           # Floating toast notification utility
 │   ├── styles/style.css       # Light Neumorphic Design System stylesheet
 │   └── main.js                # Composition root & event orchestration
-├── tests/                     # 72 automated tests (unit & integration)
+├── tests/                     # 132 automated tests (unit & integration)
 └── *.md                       # Design system, audit, decisions, and log
 ```
 

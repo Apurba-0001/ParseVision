@@ -223,6 +223,10 @@ export function createInspectAstPanel(options = {}) {
     }
   }
 
+  if (triggerButton) {
+    setTriggerButton(triggerButton);
+  }
+
   return {
     element: modalOverlay,
     open,
