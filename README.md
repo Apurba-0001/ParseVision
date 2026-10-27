@@ -1,138 +1,333 @@
-# ParseVision | AST Explorer
+[README.md](https://github.com/user-attachments/files/34029602/README.md)
+# ParseVision
 
-ParseVision is a professional, educational browser workspace for exploring how arithmetic expressions are tokenized, parsed, and represented as Abstract Syntax Trees (ASTs). Designed for learners, educators, and developers, it transforms abstract grammar rules and tree traversals into an interactive, visual experience.
+**An interactive Abstract Syntax Tree (AST) generator, visualizer, and expression evaluator.**
 
-> *"Understand the structure behind every expression."*
+ParseVision is a browser-based workspace for exploring arithmetic expressions and core compiler concepts. Enter an expression to tokenize and parse it into a structured AST, inspect its hierarchy on an interactive canvas, step through traversal algorithms, and evaluate supported numerical expressions.
 
----
+Built with JavaScript, SVG, HTML, CSS, and Vite, ParseVision runs its core parsing, evaluation, and visualization workflows in the browser without requiring a backend or database.
 
-## Key Features
+<!-- Add a genuine screenshot of the current application when one is available. -->
+<!-- ![ParseVision workspace](docs/parsevision-screenshot.png) -->
 
-- **Light Neumorphic Workspace:** Restrained dual-light shadows, inset input surfaces, clear typography, and WCAG AA contrast designed specifically for code and AST exploration.
-- **Visual AST as Hero:** The SVG syntax tree is the focal center of the application, featuring interactive zoom controls (`+`, `-`, `100%` reset, `Fit` view), dynamic node count and tree depth metrics, a color-coded node legend, and direct node-click interaction to jump traversal sequences.
-- **Interactive Traversal Explorer:**
-  - Supports **Preorder**, **Inorder**, and **Postorder** traversals.
-  - Interactive playback controls: **Reset (↺)**, **Previous (◀)**, **Play / Pause (▶ / ⏸)**, **Next (▶)**, **End (⏭)**, and configurable playback speed (`0.5x`, `1x`, `2x`).
-  - **Tree-Synchronized Highlights:** The currently visited AST node pulses with an active highlight while numbered visit badges (`1`, `2`, `3`...) appear dynamically on visited tree nodes.
-  - **Bidirectional Synchronization:** Click any tree node to jump to its traversal step, or click any sequence pill to highlight its tree node.
-  - Contextual step evaluation banner showing current subexpression details.
-  - One-click **Copy Sequence** action and **Export SVG** with floating toast feedback.
-- **On-Demand "Inspect AST" Drawer:** The raw JSON representation is housed in a collapsible disclosure panel, keeping the primary workspace clean while providing formatted JSON, node metric counters, payload size, and one-click clipboard copying.
-- **Preset Example Expressions:** Rapidly load and explore canonical expressions:
-  - `a + b * 2`
-  - `(a + b) * 2`
-  - `10 - 4 - 2`
-  - `-(a + 3) * 2`
-  - `total / count + 5`
-- **Helpful Error Diagnostics:** Precise syntax and lexical errors reported with zero-based character offsets (`at character X.`) while suppressing raw stack traces. Automatic stale result clearance ensures broken expressions never show outdated trees.
-- **Keyboard Navigation & Accessibility:** Full keyboard support including `Ctrl + Enter` (or `Cmd + Enter`) to parse, interactive tree node activation (`Enter`/`Space`), ARIA roles, focus rings, and `@media (prefers-reduced-motion: reduce)` support.
+## Highlights
 
----
+- **Expression parsing:** Recursive-descent parsing for arithmetic expressions, numeric literals, identifiers, and parentheses.
+- **Operator precedence:** Represents unary, multiplicative, and additive operations correctly in the AST.
+- **Interactive AST canvas:** Explore a hierarchical tree with SVG connectors, semantic node colors, zoom, and pan.
+- **Traversal playback:** Step through preorder, inorder, and postorder traversal with playback controls and adjustable speed.
+- **Node inspection:** Inspect node properties and view the AST as formatted JSON.
+- **Expression evaluation:** Compute supported numerical expressions.
+- **Error diagnostics:** Surface lexical and syntax errors with character offsets.
+- **PNG export:** Export the AST visualization as an image.
+- **Responsive interface:** Use the application across desktop, tablet, and mobile layouts.
+
+## From Expression to AST
+
+Consider the expression:
+
+```text
+2 + 3 * (4 - 1)
+```
+
+Multiplication has higher precedence than addition, so the root `+` node has `2` as its left child and the multiplication subtree as its right child. The parenthesized subtraction becomes the right child of `*`.
+
+```mermaid
+flowchart TD
+    Root["BinaryExpression · +"]
+    N2["Literal · 2"]
+    Mul["BinaryExpression · *"]
+    N3["Literal · 3"]
+    Sub["BinaryExpression · -"]
+    N4["Literal · 4"]
+    N1["Literal · 1"]
+
+    Root --> N2
+    Root --> Mul
+    Mul --> N3
+    Mul --> Sub
+    Sub --> N4
+    Sub --> N1
+
+    classDef root fill:#EF4444,stroke:#B91C1C,color:#FFFFFF,stroke-width:2px
+    classDef binary fill:#3B82F6,stroke:#1D4ED8,color:#FFFFFF,stroke-width:2px
+    classDef literal fill:#FACC15,stroke:#CA8A04,color:#422006,stroke-width:2px
+
+    class Root root
+    class Mul,Sub binary
+    class N2,N3,N4,N1 literal
+```
+
+The expression evaluates to **`11`**:
+
+1. Evaluate the parenthesized expression: `4 - 1 = 3`.
+2. Multiply: `3 * 3 = 9`.
+3. Add: `2 + 9 = 11`.
+
+### Traversal orders
+
+For this AST, the traversal sequences are:
+
+| Traversal | Visit order |
+|---|---|
+| **Preorder** (node, left, right) | `+` → `2` → `*` → `3` → `-` → `4` → `1` |
+| **Inorder** (left, node, right) | `2` → `+` → `3` → `*` → `4` → `-` → `1` |
+| **Postorder** (left, right, node) | `2` → `3` → `4` → `1` → `-` → `*` → `+` |
+
+### Example AST JSON
+
+The following illustrates the nested object structure for this expression. Confirm node names and fields against the current parser implementation before relying on this as a serialized contract.
+
+```json
+{
+  "type": "BinaryExpression",
+  "operator": "+",
+  "left": {
+    "type": "Literal",
+    "value": 2,
+    "raw": "2"
+  },
+  "right": {
+    "type": "BinaryExpression",
+    "operator": "*",
+    "left": {
+      "type": "Literal",
+      "value": 3,
+      "raw": "3"
+    },
+    "right": {
+      "type": "BinaryExpression",
+      "operator": "-",
+      "left": {
+        "type": "Literal",
+        "value": 4,
+        "raw": "4"
+      },
+      "right": {
+        "type": "Literal",
+        "value": 1,
+        "raw": "1"
+      }
+    }
+  }
+}
+```
+
+## Supported Syntax
+
+ParseVision focuses on arithmetic expression parsing rather than a complete programming language.
+
+### Grammar
+
+The parser uses a non-left-recursive grammar:
+
+```text
+E  → T E'
+E' → + T E' | - T E' | ε
+T  → U T'
+T' → * U T' | / U T' | ε
+U  → + U | - U | P
+P  → ( E ) | id | num
+```
+
+### Supported constructs
+
+| Construct | Example | Notes |
+|---|---|---|
+| Addition | `a + b` | Binary, left-associative |
+| Subtraction | `a - b` | Binary, left-associative |
+| Multiplication | `a * b` | Binary, left-associative |
+| Division | `a / b` | Binary, left-associative |
+| Unary plus | `+a` | Prefix operator |
+| Unary minus | `-a` | Prefix operator |
+| Parentheses | `(a + b) * c` | Explicit grouping |
+| Numeric literals | `42`, `3.14`, `.5`, `5.` | Confirm exact accepted forms in the tokenizer |
+| Identifiers | `x`, `total`, `count_1` | Names beginning with a letter or underscore |
+
+### Operator precedence
+
+| Precedence | Operators / constructs | Associativity |
+|---|---|---|
+| Highest | Parenthesized expressions, literals, identifiers | — |
+| 3 | Unary `+`, unary `-` | Prefix / right-recursive |
+| 2 | `*`, `/` | Left to right |
+| Lowest | Binary `+`, binary `-` | Left to right |
+
+### Unsupported syntax
+
+The documented grammar does not include modulo (`%`), exponentiation (`**` or `^`), assignment, comparisons, bitwise operators, statements, or control-flow constructs.
+
+ParseVision is an arithmetic-expression explorer, not a general-purpose JavaScript parser or interpreter.
+
+## AST Node Model
+
+The AST uses plain JavaScript objects to represent syntax. The node names and fields below should match the current implementation.
+
+| Node type | Purpose | Typical properties |
+|---|---|---|
+| `BinaryExpression` | An operation with two operands | `type`, `operator`, `left`, `right` |
+| `UnaryExpression` | A prefix operation with one operand | `type`, `operator`, `argument` |
+| `Identifier` | A variable or symbol name | `type`, `name` |
+| `Literal` | A numeric literal | `type`, `value`, `raw` |
+
+### Visual node categories
+
+The canvas uses color to distinguish semantic roles:
+
+| Category | Color | Hex |
+|---|---|---|
+| Root node | Red | `#EF4444` |
+| Binary expression | Blue | `#3B82F6` |
+| Unary expression | Orange | `#F97316` |
+| Identifier | Green | `#22C55E` |
+| Numeric literal | Yellow | `#FACC15` |
+
+## How It Works
+
+ParseVision separates syntax analysis from visualization and interaction.
+
+```mermaid
+flowchart LR
+    A["Expression input"] --> B["Tokenizer"]
+    B --> C["Recursive-descent parser"]
+    C --> D["AST"]
+    D --> E["SVG tree renderer"]
+    D --> F["Traversal engine"]
+    D --> G["Expression evaluator"]
+    D --> H["JSON inspector"]
+```
+
+1. **Tokenization** — scans the source expression and identifies numbers, identifiers, operators, and parentheses while tracking character offsets.
+2. **Parsing** — consumes tokens according to the arithmetic grammar, enforcing precedence and grouping.
+3. **AST construction** — represents the expression as a hierarchy of typed nodes.
+4. **Tree layout and rendering** — calculates node positions and draws the hierarchy with SVG connectors and node cards.
+5. **Traversal and evaluation** — operates on the AST independently of its visual representation.
+6. **Inspection and diagnostics** — lets users inspect the structure and understand invalid input.
+
+## Interacting with the Canvas
+
+### Viewport navigation
+
+- **Pan:** Drag on the canvas to move around the tree.
+- **Zoom:** Use the `+` and `−` controls or `Ctrl`/`Cmd` while scrolling, where supported.
+- **Reset zoom:** Use the `100%` control.
+- **Fit to view:** Use the fit shortcut if available in the current build.
+
+### Traversal playback
+
+Choose preorder, inorder, or postorder to view the corresponding visit sequence. Playback controls allow the traversal to be played, paused, or replayed, with configurable speeds.
+
+### Inspecting nodes
+
+Select a node to highlight it and inspect its semantic information. The AST inspector presents the serialized tree as formatted JSON and supports copying the JSON payload.
+
+### Export
+
+Export the current AST diagram as a PNG image.
+
+> Interaction details and keyboard shortcuts should be checked against the current implementation before being documented as guaranteed behavior.
 
 ## Technology Stack
 
-- **Core:** Native JavaScript ES modules (`"type": "module"`), HTML5, and CSS3
-- **Visualization:** Scalable Vector Graphics (SVG) with pure layout calculation
-- **Development Tooling:** Vite (sole dev dependency for fast HMR and bundling)
-- **Testing:** Node.js built-in test runner (`node:test`, `node:assert/strict`)
+| Technology | Role |
+|---|---|
+| JavaScript (ES modules) | Tokenization, parsing, AST construction, evaluation, and interaction |
+| HTML5 and CSS | Application structure, layout, and responsive styling |
+| SVG | AST nodes, connectors, and scalable tree visualization |
+| Vite | Local development server and production bundler |
 
----
-
-## Architecture and Repository Layout
-
-Source text flows through `tokenizer.js` → `parser.js` → plain-object AST → tree layout or traversal algorithms. The parsing and traversal engines remain 100% decoupled from DOM/SVG rendering.
-
-```text
-ParseVision/
-├── index.html                 # Application entry page
-├── src/
-│   ├── parser/                # Tokenizer, grammar, AST factories, parser, evaluator
-│   ├── traversal/             # Preorder, Inorder, and Postorder algorithms
-│   ├── visualizer/            # Deterministic SVG tree layout and styling
-│   ├── components/            # Focused DOM components:
-│   │   ├── editor.js          # Expression editor, diagnostics & presets
-│   │   ├── outputPanel.js     # Hero AST canvas, traversal controls & zoom
-│   │   ├── inspectAstPanel.js # Collapsible JSON inspection modal
-│   │   └── toast.js           # Floating toast notification utility
-│   ├── styles/style.css       # Light Neumorphic Design System stylesheet
-│   └── main.js                # Composition root & event orchestration
-└── tests/                     # 111 automated tests (unit & integration)
-```
-
----
+ParseVision uses browser-side computation. It does not require a backend service or database for its core parsing, visualization, and evaluation workflows.
 
 ## Getting Started
 
 ### Prerequisites
 
-Node.js 20 or later and npm.
+- [Node.js](https://nodejs.org/)
+- npm, included with Node.js
 
-### Installation
+Use a Node.js version supported by the Vite version specified in `package.json`.
+
+### Install
 
 ```bash
-npm install
+git clone <YOUR_REPOSITORY_URL>
+cd ParseVision
+npm ci
 ```
 
-### Development Server
+Replace `<YOUR_REPOSITORY_URL>` with the repository's actual Git URL.
+
+### Run locally
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:5173` to explore the workspace.
+Open the local URL printed by Vite in your browser.
 
-### Production Build
+### Build for production
 
 ```bash
 npm run build
 ```
 
-Compiles and bundles production-ready assets into the `dist/` directory.
+Vite writes the production build to `dist/`.
 
-### Running Tests
+## Project Structure
 
-```bash
-npm test
-```
-
-Executes the complete test suite (111 tests across 8 test files) with 0 external test framework dependencies.
-
-To run tests in watch mode during development:
-
-```bash
-npm run test:watch
-```
-
----
-
-## Canonical Example: `a + b * 2`
-
-Tree Structure:
 ```text
-        +
-       / \
-      a   *
-         / \
-        b   2
+ParseVision/
+├── index.html
+├── package.json
+├── vite.config.js
+└── src/
+    ├── main.js
+    ├── parser/
+    │   ├── grammar.js
+    │   ├── tokenizer.js
+    │   ├── ast.js
+    │   ├── parser.js
+    │   └── evaluator.js
+    ├── traversal/
+    │   └── traversal.js
+    ├── visualizer/
+    │   ├── nodeStyles.js
+    │   └── treeRenderer.js
+    ├── components/
+    │   ├── editor.js
+    │   ├── outputPanel.js
+    │   ├── inspectAstPanel.js
+    │   └── toast.js
+    └── styles/
+        └── style.css
 ```
 
-Multiplication binds tighter than addition, placing `+` at the root and `*` in the right subtree.
+- `main.js` — application entry point and event orchestration.
+- `parser/` — grammar, tokenization, AST construction, parsing, and evaluation.
+- `traversal/` — tree traversal algorithms.
+- `visualizer/` — node styles, tree layout, SVG rendering, and export.
+- `components/` — expression editor, output canvas, AST inspector, and notifications.
+- `styles/` — application styling and responsive layout.
 
-### Traversal Sequences
+## Scope and Limitations
 
-1. **Preorder (Node → Left → Right):**
-   `+` → `a` → `*` → `b` → `2`
-2. **Inorder (Left → Node → Right):**
-   `a` → `+` → `b` → `*` → `2`
-3. **Postorder (Left → Right → Node):**
-   `a` → `b` → `2` → `*` → `+`
+- **Arithmetic grammar:** The parser handles the expression forms listed above; it does not parse complete programs, declarations, functions, or control flow.
+- **Identifiers:** Identifiers can be represented in the AST. Evaluating expressions that contain identifiers requires variable bindings supported by the evaluator interface.
+- **Division by zero:** Division by zero is syntactically valid; the numeric result follows JavaScript number semantics.
+- **Browser-side execution:** Core parsing, evaluation, and rendering run locally in the browser.
 
-*(Note: Unary operators visit operator before operand in Inorder traversal by documented compiler convention).*
+## Potential Extensions
 
----
+Possible future directions include:
 
-## Known Boundaries
+- An interactive variable environment for evaluating identifier-based expressions.
+- Step-by-step visualization of expression evaluation.
+- Additional operators and grammar rules.
+- Breadth-first (level-order) traversal.
+- An interactive grammar explorer.
 
-- ParseVision is an educational syntax explorer, not a runtime calculator or full programming language interpreter.
-- Division by zero (e.g. `10 / 0`) is parsed and visualized correctly as valid syntax; evaluation checks are intentionally deferred.
-- No backend, external database, or account tracking is used.
+These are potential enhancements, not claims about existing functionality.
+
+## License
+
+Check the repository for a `LICENSE` file before redistributing or reusing this project. If no license is present, the repository does not currently specify an open-source license.
