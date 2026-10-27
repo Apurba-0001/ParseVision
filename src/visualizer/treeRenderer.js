@@ -1,4 +1,4 @@
-import { NODE_DIMENSIONS, getNodeStyle } from './nodeStyles.js';
+import { NODE_DIMENSIONS, getNodeStyle, CONNECTOR_STYLE } from './nodeStyles.js';
 
 const SUPPORTED_TYPES = new Set(['BinaryExpression', 'UnaryExpression', 'Identifier', 'Literal', 'NumericLiteral']);
 
@@ -246,7 +246,7 @@ export function renderTree(container, ast, options = {}) {
   for (const edge of edges) {
     const d = edge.d || generateBezierPath(edge.parentX, edge.parentY, edge.childX, edge.childY);
     edgesHtml += `
-      <path data-from="${edge.from}" data-to="${edge.to}" d="${d}" fill="none" stroke="#94A3B8" stroke-linecap="round" stroke-width="2"></path>
+      <path data-from="${edge.from}" data-to="${edge.to}" d="${d}" fill="none" stroke="${CONNECTOR_STYLE.stroke}" stroke-linecap="round" stroke-width="${CONNECTOR_STYLE.strokeWidth}"></path>
     `;
   }
   edgesGroup.innerHTML = edgesHtml;
@@ -407,12 +407,12 @@ export function updateTreeTraversal(container, { activeNodeId = null, visitedMap
       const toId = path.getAttribute('data-to');
       if (toId === activeNodeId) {
         path.classList.add('stroke-primary');
-        path.setAttribute('stroke', '#2156B5');
-        path.setAttribute('stroke-width', '2.5');
+        path.setAttribute('stroke', CONNECTOR_STYLE.activeStroke);
+        path.setAttribute('stroke-width', String(CONNECTOR_STYLE.activeStrokeWidth));
       } else {
         path.classList.remove('stroke-primary');
-        path.setAttribute('stroke', '#94A3B8');
-        path.setAttribute('stroke-width', '2');
+        path.setAttribute('stroke', CONNECTOR_STYLE.stroke);
+        path.setAttribute('stroke-width', String(CONNECTOR_STYLE.strokeWidth));
       }
     });
   }
@@ -537,7 +537,7 @@ export function buildExportSvg(ast) {
   let edgesSvg = '';
   for (const edge of edges) {
     const d = edge.d || generateBezierPath(edge.parentX, edge.parentY, edge.childX, edge.childY);
-    edgesSvg += `    <path d="${d}" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" />\n`;
+    edgesSvg += `    <path d="${d}" fill="none" stroke="${CONNECTOR_STYLE.stroke}" stroke-width="${CONNECTOR_STYLE.activeStrokeWidth || 2.5}" stroke-linecap="round" />\n`;
   }
 
   // Generate Nodes markup

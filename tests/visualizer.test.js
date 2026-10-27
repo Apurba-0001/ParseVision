@@ -101,7 +101,7 @@ test('visualizer positions operators strictly by AST structure and left-associat
 test('visualizer color palette ensures root distinction and unique node type colors', () => {
   const rootStyle = getNodeStyle('BinaryExpression', true);
   assert.equal(rootStyle, ROOT_NODE_STYLE);
-  assert.equal(rootStyle.border, '#DC2626');
+  assert.equal(rootStyle.border, '#B91C1C');
 
   const binaryStyle = getNodeStyle('BinaryExpression', false);
   const unaryStyle = getNodeStyle('UnaryExpression', false);
@@ -126,7 +126,7 @@ test('PNG export: buildExportSvg generates complete SVG containing all nodes and
   const svg = exportData.svgString;
   assert.ok(svg.startsWith('<svg'), 'SVG string should begin with <svg');
   assert.ok(svg.includes('data-is-root="true"'), 'SVG should contain root node indicator');
-  assert.ok(svg.includes('#DC2626'), 'SVG should contain root node border color');
+  assert.ok(svg.includes('#B91C1C'), 'SVG should contain root node border color');
   assert.ok(svg.includes('stroke="#94A3B8"'), 'SVG should contain connecting edges with theme stroke');
   assert.ok(svg.includes('fill="#FFFFFF"'), 'SVG should contain clean solid background');
 

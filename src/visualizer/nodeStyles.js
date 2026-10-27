@@ -1,10 +1,10 @@
 /** Centralized visual tokens for AST nodes adhering to design specifications. */
 export const ROOT_NODE_STYLE = Object.freeze({
-  fill: '#FEE2E2',
-  border: '#DC2626',
-  stroke: '#DC2626',
-  text: '#991B1B',
-  badgeBg: '#991B1B',
+  fill: '#EF4444',
+  border: '#B91C1C',
+  stroke: '#B91C1C',
+  text: '#FFFFFF',
+  badgeBg: '#B91C1C',
   badgeText: '#FFFFFF',
   label: 'Root Node'
 });
@@ -12,47 +12,47 @@ export const ROOT_NODE_STYLE = Object.freeze({
 export const NODE_STYLES = Object.freeze({
   Root: ROOT_NODE_STYLE,
   BinaryExpression: Object.freeze({
-    fill: '#DBEAFE',
-    border: '#2563EB',
-    stroke: '#2563EB',
-    text: '#1E40AF',
-    badgeBg: '#1E40AF',
+    fill: '#3B82F6',
+    border: '#1D4ED8',
+    stroke: '#1D4ED8',
+    text: '#FFFFFF',
+    badgeBg: '#1D4ED8',
     badgeText: '#FFFFFF',
     label: 'BinaryExpression'
   }),
   UnaryExpression: Object.freeze({
-    fill: '#FFEDD5',
-    border: '#EA580C',
-    stroke: '#EA580C',
-    text: '#9A3412',
-    badgeBg: '#9A3412',
+    fill: '#F97316',
+    border: '#C2410C',
+    stroke: '#C2410C',
+    text: '#431407',
+    badgeBg: '#C2410C',
     badgeText: '#FFFFFF',
     label: 'UnaryExpression'
   }),
   Identifier: Object.freeze({
-    fill: '#D1FAE5',
-    border: '#059669',
-    stroke: '#059669',
-    text: '#065F46',
-    badgeBg: '#065F46',
+    fill: '#22C55E',
+    border: '#15803D',
+    stroke: '#15803D',
+    text: '#052E16',
+    badgeBg: '#15803D',
     badgeText: '#FFFFFF',
     label: 'Identifier'
   }),
   Literal: Object.freeze({
-    fill: '#F3E8FF',
-    border: '#9333EA',
-    stroke: '#9333EA',
-    text: '#6B21A8',
-    badgeBg: '#6B21A8',
+    fill: '#FACC15',
+    border: '#CA8A04',
+    stroke: '#CA8A04',
+    text: '#422006',
+    badgeBg: '#CA8A04',
     badgeText: '#FFFFFF',
     label: 'NumericLiteral'
   }),
   NumericLiteral: Object.freeze({
-    fill: '#F3E8FF',
-    border: '#9333EA',
-    stroke: '#9333EA',
-    text: '#6B21A8',
-    badgeBg: '#6B21A8',
+    fill: '#FACC15',
+    border: '#CA8A04',
+    stroke: '#CA8A04',
+    text: '#422006',
+    badgeBg: '#CA8A04',
     badgeText: '#FFFFFF',
     label: 'NumericLiteral'
   })
@@ -106,44 +106,44 @@ export function getLegendItems() {
   return [
     {
       type: 'Root',
-      label: 'Root Node',
+      label: ROOT_NODE_STYLE.label || 'Root Node',
       fill: ROOT_NODE_STYLE.fill,
       border: ROOT_NODE_STYLE.border,
       text: ROOT_NODE_STYLE.text,
       fontBold: true,
-      classNames: 'bg-[#FEE2E2] text-[#991B1B] border-[#DC2626] font-semibold'
+      classNames: 'font-semibold'
     },
     {
       type: 'BinaryExpression',
-      label: 'BinaryExpression',
+      label: NODE_STYLES.BinaryExpression.label,
       fill: NODE_STYLES.BinaryExpression.fill,
       border: NODE_STYLES.BinaryExpression.border,
       text: NODE_STYLES.BinaryExpression.text,
-      classNames: 'bg-[#DBEAFE] text-[#1E40AF] border-[#2563EB]'
+      classNames: ''
     },
     {
       type: 'UnaryExpression',
-      label: 'UnaryExpression',
+      label: NODE_STYLES.UnaryExpression.label,
       fill: NODE_STYLES.UnaryExpression.fill,
       border: NODE_STYLES.UnaryExpression.border,
       text: NODE_STYLES.UnaryExpression.text,
-      classNames: 'bg-[#FFEDD5] text-[#9A3412] border-[#EA580C]'
+      classNames: ''
     },
     {
       type: 'Identifier',
-      label: 'Identifier',
+      label: NODE_STYLES.Identifier.label,
       fill: NODE_STYLES.Identifier.fill,
       border: NODE_STYLES.Identifier.border,
       text: NODE_STYLES.Identifier.text,
-      classNames: 'bg-[#D1FAE5] text-[#065F46] border-[#059669]'
+      classNames: ''
     },
     {
       type: 'NumericLiteral',
-      label: 'NumericLiteral',
+      label: NODE_STYLES.NumericLiteral.label,
       fill: NODE_STYLES.NumericLiteral.fill,
       border: NODE_STYLES.NumericLiteral.border,
       text: NODE_STYLES.NumericLiteral.text,
-      classNames: 'bg-[#F3E8FF] text-[#6B21A8] border-[#9333EA]'
+      classNames: ''
     }
   ];
 }

@@ -56,8 +56,7 @@ ParseVision/
 │   │   └── toast.js           # Floating toast notification utility
 │   ├── styles/style.css       # Light Neumorphic Design System stylesheet
 │   └── main.js                # Composition root & event orchestration
-├── tests/                     # 132 automated tests (unit & integration)
-└── *.md                       # Design system, audit, decisions, and log
+└── tests/                     # 111 automated tests (unit & integration)
 ```
 
 ---
@@ -96,7 +95,7 @@ Compiles and bundles production-ready assets into the `dist/` directory.
 npm test
 ```
 
-Executes the complete test suite (72 tests across 7 test files) with 0 external test framework dependencies.
+Executes the complete test suite (111 tests across 8 test files) with 0 external test framework dependencies.
 
 To run tests in watch mode during development:
 

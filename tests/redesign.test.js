@@ -173,37 +173,37 @@ test('redesign: node colors assign red to root and distinct colors to all node t
   const { buildExportSvg } = await import('../src/visualizer/treeRenderer.js');
   const { ROOT_NODE_STYLE, NODE_STYLES } = await import('../src/visualizer/nodeStyles.js');
 
-  // Root node should have red tokens: fill #FEE2E2, border #DC2626, text #991B1B
-  assert.equal(ROOT_NODE_STYLE.fill, '#FEE2E2');
-  assert.equal(ROOT_NODE_STYLE.border, '#DC2626');
-  assert.equal(ROOT_NODE_STYLE.text, '#991B1B');
+  // Root node should have red tokens: fill #EF4444, border #B91C1C, text #FFFFFF
+  assert.equal(ROOT_NODE_STYLE.fill, '#EF4444');
+  assert.equal(ROOT_NODE_STYLE.border, '#B91C1C');
+  assert.equal(ROOT_NODE_STYLE.text, '#FFFFFF');
 
   // Node type tokens
-  assert.equal(NODE_STYLES.BinaryExpression.fill, '#DBEAFE');
-  assert.equal(NODE_STYLES.BinaryExpression.border, '#2563EB');
-  assert.equal(NODE_STYLES.BinaryExpression.text, '#1E40AF');
+  assert.equal(NODE_STYLES.BinaryExpression.fill, '#3B82F6');
+  assert.equal(NODE_STYLES.BinaryExpression.border, '#1D4ED8');
+  assert.equal(NODE_STYLES.BinaryExpression.text, '#FFFFFF');
 
-  assert.equal(NODE_STYLES.UnaryExpression.fill, '#FFEDD5');
-  assert.equal(NODE_STYLES.UnaryExpression.border, '#EA580C');
-  assert.equal(NODE_STYLES.UnaryExpression.text, '#9A3412');
+  assert.equal(NODE_STYLES.UnaryExpression.fill, '#F97316');
+  assert.equal(NODE_STYLES.UnaryExpression.border, '#C2410C');
+  assert.equal(NODE_STYLES.UnaryExpression.text, '#431407');
 
-  assert.equal(NODE_STYLES.Identifier.fill, '#D1FAE5');
-  assert.equal(NODE_STYLES.Identifier.border, '#059669');
-  assert.equal(NODE_STYLES.Identifier.text, '#065F46');
+  assert.equal(NODE_STYLES.Identifier.fill, '#22C55E');
+  assert.equal(NODE_STYLES.Identifier.border, '#15803D');
+  assert.equal(NODE_STYLES.Identifier.text, '#052E16');
 
-  assert.equal(NODE_STYLES.Literal.fill, '#F3E8FF');
-  assert.equal(NODE_STYLES.Literal.border, '#9333EA');
-  assert.equal(NODE_STYLES.Literal.text, '#6B21A8');
+  assert.equal(NODE_STYLES.Literal.fill, '#FACC15');
+  assert.equal(NODE_STYLES.Literal.border, '#CA8A04');
+  assert.equal(NODE_STYLES.Literal.text, '#422006');
 
   // Verify in export SVG of expression with multiplication root
   const astMul = parse('(x + y) * -(a - 2)');
   const exportMul = buildExportSvg(astMul);
-  assert.ok(exportMul.svgString.includes('fill="#FEE2E2" stroke="#DC2626"'), 'Root node must be red regardless of operator');
-  assert.ok(exportMul.svgString.includes('fill="#991B1B">'), 'Root node label text must be red (#991B1B)');
-  assert.ok(exportMul.svgString.includes('fill="#DBEAFE" stroke="#2563EB"'), 'Child BinaryExpression must be blue');
-  assert.ok(exportMul.svgString.includes('fill="#FFEDD5" stroke="#EA580C"'), 'Child UnaryExpression must be orange');
-  assert.ok(exportMul.svgString.includes('fill="#D1FAE5" stroke="#059669"'), 'Child Identifier must be emerald');
-  assert.ok(exportMul.svgString.includes('fill="#F3E8FF" stroke="#9333EA"'), 'Child NumericLiteral must be purple');
+  assert.ok(exportMul.svgString.includes('fill="#EF4444" stroke="#B91C1C"'), 'Root node must be red regardless of operator');
+  assert.ok(exportMul.svgString.includes('fill="#FFFFFF">'), 'Root node label text must be white (#FFFFFF)');
+  assert.ok(exportMul.svgString.includes('fill="#3B82F6" stroke="#1D4ED8"'), 'Child BinaryExpression must be blue');
+  assert.ok(exportMul.svgString.includes('fill="#F97316" stroke="#C2410C"'), 'Child UnaryExpression must be orange');
+  assert.ok(exportMul.svgString.includes('fill="#22C55E" stroke="#15803D"'), 'Child Identifier must be green');
+  assert.ok(exportMul.svgString.includes('fill="#FACC15" stroke="#CA8A04"'), 'Child NumericLiteral must be yellow');
 });
 
 test('redesign: stress test layout on ~173 nodes, depth 12 arithmetic expression', async () => {

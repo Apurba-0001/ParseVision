@@ -23,36 +23,33 @@ export function createEditor(options = 'a + b * 2') {
   section.setAttribute('aria-label', 'Expression Editor');
 
   section.innerHTML = `
-    <!-- Top Row: Full-width Expression Input & Action Buttons -->
-    <div class="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 min-w-0">
+    <!-- Top Row: Full-width Expression Input, Action Buttons, and Diagnostic Telemetry -->
+    <div id="editor-controls-row" class="editor-controls-row w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 min-w-0">
       <!-- Inset Monospace Expression Input Form -->
-      <div class="flex-1 flex items-center neu-recessed rounded-lg px-3.5 py-2 focus-within:ring-2 focus-within:ring-primary-container transition-all min-w-0">
+      <div id="expression-input-wrapper" class="expression-input-wrapper flex-1 flex items-center neu-recessed rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-primary-container transition-shadow transition-colors min-w-0">
         <span class="material-symbols-outlined text-secondary text-lg select-none mr-2 flex-shrink-0">function</span>
-        <input class="w-full bg-transparent border-none p-0 text-label-code-lg font-label-code-lg text-on-surface focus:outline-none focus:ring-0 placeholder-secondary tracking-wide font-mono" id="expression-input" placeholder="Enter arithmetic expression..." type="text" value="${initialValue}" aria-label="Arithmetic expression"/>
+        <input class="expression-input w-full bg-transparent border-none p-0 text-label-code-lg font-label-code-lg text-on-surface focus:outline-none focus:ring-0 placeholder-secondary" id="expression-input" placeholder="Enter arithmetic expression..." type="text" value="${initialValue}" aria-label="Arithmetic expression"/>
       </div>
-      <!-- Direct Execution Buttons -->
-      <div class="flex items-center gap-2 flex-shrink-0 justify-end sm:justify-start">
-        <button class="flex-1 sm:flex-initial px-4 h-10 rounded-lg text-label-code-md font-label-code-md text-on-primary neu-button-primary transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shadow-sm font-medium" id="btn-generate-ast" type="button" title="Generate AST from expression (Ctrl+Enter)" aria-label="Generate AST">
+      <!-- Primary Action Buttons: Dedicated row on mobile, adjacent on sm+ -->
+      <div id="editor-actions-group" class="editor-actions-group flex items-center gap-2 flex-shrink-0 justify-end sm:justify-start">
+        <button class="flex-1 sm:flex-initial px-4 h-10 rounded-lg text-label-code-md font-label-code-md text-on-primary neu-button-primary transition-colors transition-transform duration-150 active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shadow-sm font-medium" id="btn-generate-ast" type="button" title="Generate AST from expression (Ctrl+Enter)" aria-label="Generate AST">
           <span class="material-symbols-outlined text-base">auto_awesome</span>
           <span>Generate AST</span>
         </button>
-        <button class="px-4 h-10 rounded-lg text-label-code-md font-label-code-md neu-micro text-secondary hover:text-primary transition-all duration-150 active:scale-95 cursor-pointer whitespace-nowrap" id="btn-clear-expr" type="button" title="Reset editor and tree visualization" aria-label="Reset editor and visualization">
+        <button class="px-4 h-10 rounded-lg text-label-code-md font-label-code-md neu-micro text-secondary hover:text-primary transition-colors transition-transform duration-150 active:scale-95 cursor-pointer whitespace-nowrap flex-initial" id="btn-clear-expr" type="button" title="Reset editor and tree visualization" aria-label="Reset editor and visualization">
           Reset
         </button>
       </div>
-    </div>
-    <!-- Bottom Row: Presets and Status Diagnostic Indicator -->
-    <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#E3E7F0]">
-      <!-- Preset Example Chips -->
-      <div class="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
-        <span class="text-body-sm font-body-sm text-secondary mr-1 select-none flex-shrink-0 font-medium">Presets:</span>
-        <div id="preset-chips-container" class="flex flex-wrap items-center gap-1.5 min-w-0"></div>
-      </div>
-      <!-- Parser Diagnostic / Telemetry -->
-      <div class="flex items-center gap-2 text-label-code-sm font-label-code-sm text-secondary neu-micro px-3 py-1.5 rounded-lg self-start sm:self-auto flex-shrink-0 max-w-full" id="parser-diagnostic" role="status" aria-live="polite">
+      <!-- Validation / Error Status: Far right on desktop (lg+), flow row on mobile -->
+      <div id="parser-diagnostic" class="parser-diagnostic-wrapper w-full flex items-center gap-2 text-label-code-sm font-label-code-sm text-secondary neu-micro px-3 py-1.5 rounded-lg min-w-0" role="status" aria-live="polite">
         <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" id="parser-status-dot"></span>
-        <span id="parser-status-text" class="truncate max-w-full">Valid arithmetic expression (parsed in <strong>1.2ms</strong>)</span>
+        <span id="parser-status-text" class="text-secondary break-words min-w-0 flex-1 leading-snug">Valid arithmetic expression (parsed in <strong>1.2ms</strong>)</span>
       </div>
+    </div>
+    <!-- Presets Section: Clearly separated second row -->
+    <div id="editor-presets-row" class="editor-presets-row flex items-start sm:items-center gap-2 pt-2 border-t border-[#E3E7F0] w-full min-w-0">
+      <span class="text-body-sm font-body-sm text-secondary select-none flex-shrink-0 font-medium pt-0.5 sm:pt-0">Presets:</span>
+      <div id="preset-chips-container" class="preset-chips-container flex flex-wrap items-center gap-1.5 min-w-0 flex-1"></div>
     </div>
   `;
 
@@ -99,15 +96,15 @@ export function createEditor(options = 'a + b * 2') {
     if (valid) {
       diagnosticDot.className = 'inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0';
       diagnosticText.innerHTML = message
-        ? `<span>${message}</span>`
+        ? `<span class="break-words">${message}</span>`
         : `Valid arithmetic expression (parsed in <strong>${parseTimeMs}ms</strong>)`;
-      diagnostic.className = 'flex items-center gap-2 text-label-code-sm font-label-code-sm text-secondary neu-micro px-3 py-1.5 rounded-lg self-start sm:self-auto flex-shrink-0 max-w-full';
+      diagnostic.className = 'parser-diagnostic-wrapper w-full flex items-center gap-2 text-label-code-sm font-label-code-sm text-secondary neu-micro px-3 py-1.5 rounded-lg min-w-0';
       diagnostic.setAttribute('role', 'status');
       diagnostic.setAttribute('aria-live', 'polite');
     } else {
       diagnosticDot.className = 'inline-block w-2 h-2 rounded-full bg-rose-500 flex-shrink-0';
-      diagnosticText.innerHTML = `<span class="text-rose-600 font-semibold">${message}</span>`;
-      diagnostic.className = 'flex items-center gap-2 text-label-code-sm font-label-code-sm text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg self-start sm:self-auto flex-shrink-0 max-w-full';
+      diagnosticText.innerHTML = `<span class="text-rose-600 font-semibold break-words">${message}</span>`;
+      diagnostic.className = 'parser-diagnostic-wrapper w-full flex items-center gap-2 text-label-code-sm font-label-code-sm text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-lg min-w-0';
       diagnostic.setAttribute('role', 'alert');
       diagnostic.setAttribute('aria-live', 'assertive');
     }
