@@ -11,17 +11,15 @@ dist/
 .DS_Store
 Thumbs.db
 
-# IDE settings
+# IDE and editor settings
 .vscode/
 .idea/
 
 # Logs
 *.log
-
-# Keep only README.md in git; all other markdown files stay local
-*.md
-**/*.md
-!/README.md
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Testing output and reports
 coverage/
@@ -35,11 +33,7 @@ reports/
 junit*.xml
 *.tap
 
-# Local-only test files (evaluator/grammar coverage retained locally)
-tests/evaluator_and_grammar.test.js
-
-# Development artifacts
+# Temporary development files
 scratch/
-stitch_extracted/
-captured_screen*.png
+*.tmp
 *.zip
