@@ -2,9 +2,9 @@
 
 > An interactive Abstract Syntax Tree generator, visualizer, and expression evaluator.
 
-ParseVision is an educational, browser-based developer tool designed for exploring compiler frontend fundamentals and syntax tree analysis. It accepts arithmetic and algebraic expressions, tokenizes and parses them through a deterministic recursive-descent parser, and renders the resulting Abstract Syntax Tree (AST) onto an interactive, coordinate-plane SVG canvas.
+ParseVision is an educational, browser-based developer tool designed for exploring compiler frontend fundamentals, formal expression grammars, and syntax tree analysis. It accepts arithmetic, algebraic, assignment, modulo, and exponentiation expressions, tokenizes and parses them through a deterministic recursive-descent parser, and renders the resulting Abstract Syntax Tree (AST) onto an interactive, coordinate-plane SVG canvas with strict mathematical symmetry.
 
-Users can step through canonical tree traversal algorithms (Preorder, Inorder, Postorder) with animated playback, inspect node properties with real-time diagnostics, evaluate expressions using standard IEEE 754 floating-point arithmetic, examine syntax-highlighted AST JSON schemas, and export diagrams directly from the browser.
+Users can step through canonical tree traversal algorithms (Preorder, Inorder, Postorder) with animated playback, inspect node properties with real-time diagnostics, evaluate expressions using standard IEEE 754 floating-point arithmetic and session-scoped variable storage, examine syntax-highlighted AST JSON schemas, and export diagrams directly from the browser.
 
 <!-- Application screenshot placeholder: add a verified image when published -->
 <!-- <p align="center"><img src="docs/screenshot.png" alt="ParseVision Workspace" width="800"></p> -->
@@ -15,23 +15,32 @@ Understanding how source code transitions from raw text into hierarchical syntax
 
 The application addresses common conceptual challenges in syntax analysis, including:
 
-- **Operator Precedence and Associativity:** Visualizing how multiplicative operations bind tighter than additive operations, and how left-associativity builds left-skewed subtrees.
-- **Explicit Grammar Adherence:** Demonstrating how formal, non-left-recursive grammar rules guide recursive-descent parsing functions.
+- **Mathematical Parent-Child Layout Symmetry:** Ensuring every binary parent is positioned at the exact mathematical midpoint between its children ($parent.x = (leftChild.x + rightChild.x) / 2$), unary children are vertically aligned on the same centerline ($parent.x = child.x$), and sibling subtrees maintain collision-free clearance without overlapping cards or connectors.
+- **Root-Anchored Viewport Architecture:** Ensuring the root node serves as a stable horizontal anchor at the exact viewport center ($rootScreenX = viewportWidth / 2$) regardless of expression length, nesting depth, or subtree asymmetry.
+- **Multi-Level Grammar Precedence:** Visualizing how assignment (`=`), additive (`+`, `-`), multiplicative/modulo (`*`, `/`, `%`), exponentiation (`**`, `^`), and prefix unary (`+`, `-`) operations establish clear syntactic hierarchies.
+- **Operator Precedence and Associativity:** Demonstrating how right-associative exponentiation (`2 ** 3 ** 2 === 512`) and assignment (`a = b = 5`) build right-skewed subtrees, while left-associative operations build left-skewed subtrees.
+- **Explicit Grammar Adherence:** Demonstrating how formal, non-left-recursive grammar rules guide deterministic recursive-descent parsing functions.
 - **Tree Traversal Sequences:** Comparing depth-first visit orders (Preorder, Inorder, Postorder) with animated node highlighting and sequential visit counters.
 - **Concrete AST Representations:** Providing a transparent, plain-object JSON schema that mirrors the in-memory representation used by compilers.
 
 ## 2. Features
 
 ### Parsing and Grammar
-- **Deterministic Recursive-Descent Parser:** Implements LL(1) recursive-descent parsing driven by a formal, non-left-recursive arithmetic grammar.
-- **Operator Precedence and Associativity:** Correctly reflects standard algebraic precedence (`*` and `/` over `+` and `-`) with left-associative chaining.
+- **Deterministic Recursive-Descent Parser:** Implements LL(1) recursive-descent parsing driven by an unambiguous, non-left-recursive expression grammar.
+- **6-Level Operator Precedence Hierarchy:** Correctly evaluates variable assignment (`=`), additive operations (`+`, `-`), multiplicative and modulo operations (`*`, `/`, `%`), exponentiation (`**`, `^`), prefix unary signs (`+`, `-`), and primary expressions (`( ... )`, `id`, `num`).
+- **Right-Associative Exponentiation:** Full support for power operations using both `**` and `^` notation, right-associating chained exponents (`2 ** 3 ** 2 === 512`) and respecting standard algebraic unary binding (`-2 ** 2 === -4`).
+- **Modulo Operations:** Support for integer and floating-point remainder arithmetic (`%`) at the multiplicative precedence level with explicit modulo-by-zero error handling.
+- **Variable Assignment:** First-class `AssignmentExpression` nodes binding values to identifier targets (`X = 1 + 2`, chained `a = b = 5`) with syntax validation preventing invalid assignment targets.
 - **Prefix Unary Operators:** Full support for unary plus (`+`) and unary minus (`-`) operators binding directly to primary operands.
 - **Sub-Expression Grouping:** Nested parentheses `( ... )` explicitly override operator precedence and establish isolated subtree boundaries.
 
 ### AST Visualization and Inspection
 - **Interactive SVG Canvas:** Renders hierarchical tree layouts with mathematically calculated coordinates and smooth cubic bezier connector curves.
-- **Semantic Color Coding:** Categorizes nodes by role using distinctive color tokens (Root, BinaryExpression, UnaryExpression, Identifier, and Literal).
+- **Exact Parent-Child Midpoint Symmetry:** Every binary parent node is guaranteed to be centered precisely halfway between its children with identical horizontal clearances ($parent.x - leftChild.x = rightChild.x - parent.x$).
+- **Single-Child Vertical Alignment:** Unary expression arguments sit directly below their parent node on the exact same vertical centerline.
+- **Root-Anchored Viewport Centering:** The root node is positioned at the exact horizontal center of the viewport ($viewportWidth / 2$) on initial render and window resize, preserving full 100% zoom legibility without automatic shrinking.
 - **Collision-Free Geometry:** Recursively computes subtree bounding widths to ensure uniform node sizing (64×64 px) without overlapping cards or connectors.
+- **Semantic Color Coding:** Categorizes nodes by role using distinctive color tokens (`Root Node`, `AssignmentExpression`, `BinaryExpression`, `UnaryExpression`, `Identifier`, and `NumericLiteral`).
 - **Single-Node Inspection:** Clicking any node highlights it with an active selection ring and displays its semantic type and properties via a toast notification.
 
 ### Traversal and Playback
@@ -41,15 +50,17 @@ The application addresses common conceptual challenges in syntax analysis, inclu
 - **Synchronized Visual Feedback:** Sequential visit badges (`1`, `2`, `3`...) and a pulsing selection ring track traversal progression alongside a live step counter.
 
 ### Expression Evaluation and Diagnostics
-- **IEEE 754 Math Evaluation:** Evaluates pure numerical ASTs in accordance with standard floating-point arithmetic rules, including standard division-by-zero behaviors (`Infinity`, `-Infinity`).
+- **Stateful Session Environment:** Variable assignments persist across evaluations in an active session, allowing subsequent expressions (e.g. `X * 4`) to resolve assigned identifiers.
+- **IEEE 754 Math Evaluation:** Evaluates expressions using standard floating-point arithmetic rules, modulo operations, and division-by-zero semantics (`Infinity`, `-Infinity`).
 - **Targeted Character-Offset Diagnostics:** Reports lexical and syntax errors with zero-based source position offsets (e.g., `at character 7.`) while immediately clearing invalid tree states.
-- **Canonical Presets:** Preloaded with canonical expressions demonstrating precedence, unary signs, nested parentheses, and associativity.
+- **Canonical Presets:** Preloaded with canonical expressions demonstrating precedence, assignment, exponentiation, unary signs, nested parentheses, and associativity.
 
 ### Navigation, Export, and Responsive Interaction
-- **Coordinate Viewport Navigation:** Drag-to-pan canvas exploration, `Ctrl + Wheel` zooming centered on cursor position, discrete zoom controls (`+`, `-`, `100%`), and auto-fitting (`F`).
+- **Coordinate Viewport Navigation:** Drag-to-pan canvas exploration, `Ctrl + Wheel` zooming, discrete zoom controls (`+`, `-`, `100%`), and user-triggered fit-to-view (`F`).
+- **Root Anchoring Preservation:** Zooming in and out preserves root centering at the viewport midpoint unless the user has manually panned the canvas.
 - **AST JSON Inspector Modal:** Dedicated dialog displaying formatted, syntax-highlighted plain JSON with node count metrics, payload byte calculations, and one-click clipboard copying.
-- **High-Resolution PNG Export:** Client-side rasterization and download of the rendered syntax tree diagram as `parsevision-ast.png`.
-- **Responsive Layout:** Adaptive design scaling smoothly from mobile viewports (with an enforced minimum initial zoom floor of 75% for legibility) up to desktop displays.
+- **High-Resolution PNG Export:** Client-side rasterization and download of the complete rendered syntax tree diagram as `parsevision-ast.png` with a clean white background.
+- **Responsive Layout:** Adaptive design scaling smoothly from mobile viewports (320px) up to ultra-wide desktop displays (1920px+).
 
 ## 3. Example: Expression to AST
 
@@ -269,23 +280,24 @@ flowchart LR
 
 ### Module Responsibilities
 
-- **`tokenizer.js`:** Performs lexical analysis on the input string, producing a stream of tokens (`NUMBER`, `IDENTIFIER`, `OPERATOR`, `PAREN`, `EOF`) while tracking zero-based character offsets (`start`, `end`).
-- **`grammar.js`:** Declares the formal grammar, operator sets, and precedence lookup tables used across parser and tokenizer modules.
-- **`parser.js`:** Executes deterministic recursive-descent parsing. Implements `parseExpression`, `parseEPrime`, `parseTerm`, `parseTPrime`, `parseUnary`, and `parsePrimary` to build the AST.
-- **`ast.js`:** Factory functions (`binaryExpression`, `unaryExpression`, `identifier`, `literal`) that validate inputs and construct plain-object AST nodes.
-- **`evaluator.js`:** Recursively evaluates the AST using standard arithmetic rules and optional environment maps for identifier resolution.
+- **`tokenizer.js`:** Performs lexical analysis on the input string, producing a stream of tokens (`NUMBER`, `IDENTIFIER`, `OPERATOR`, `PAREN`, `ASSIGN`, `EOF`) while tracking zero-based character offsets (`start`, `end`).
+- **`grammar.js`:** Declares the formal grammar, operator sets, and precedence lookup tables used across parser, tokenizer, and evaluator modules.
+- **`parser.js`:** Executes deterministic recursive-descent parsing. Implements `parseExpression`, `parseAssignment`, `parseAdditive`, `parseTerm`, `parseExponentiation`, `parseUnary`, and `parsePrimary` to build plain-object ASTs.
+- **`ast.js`:** Factory functions (`assignmentExpression`, `binaryExpression`, `unaryExpression`, `identifier`, `literal`) that validate inputs and construct plain-object AST nodes.
+- **`evaluator.js`:** Recursively evaluates the AST using standard IEEE 754 arithmetic, modulo arithmetic, right-associative exponentiation, and persistent session environment storage for assignment expressions.
 - **`traversal.js`:** Implements pure, cycle-checked preorder, inorder, and postorder traversal functions.
-- **`treeRenderer.js`:** Calculates tree layout coordinates, dimensions subtrees to avoid overlap, renders cubic bezier SVG connectors, and exports canvas trees to PNG.
+- **`treeRenderer.js`:** Calculates mathematically balanced parent-child layout coordinates, anchors the root node at the viewport center (`translateX = viewportWidth / 2 - scale * rootX`), renders cubic bezier SVG connectors, and exports canvas trees to PNG.
 - **`nodeStyles.js`:** Centralizes visual styling tokens, dimensions, legend definitions, and traversal badge colors.
 - **`editor.js`, `outputPanel.js`, `inspectAstPanel.js`, `toast.js`:** UI components managing user input, canvas interaction, JSON inspection, and feedback notifications.
 
 ## 7. Interaction Guide
 
 ### Viewport Navigation
-- **Pan:** Click and drag anywhere on the canvas background to pan the coordinate plane.
-- **Zoom:** Use the `+` and `-` toolbar buttons, or hold `Ctrl` (or `Cmd`) while scrolling with your mouse wheel or trackpad.
-- **Reset Zoom:** Click the `100%` button to restore default zoom and center the tree.
-- **Fit to View:** Press `F` or trigger fit-to-view to automatically scale and center the active tree within the viewport boundaries.
+- **Root-Anchored Initial View:** Every newly parsed expression renders with the root node positioned precisely at the horizontal center of the viewport ($viewportWidth / 2$) at 100% zoom.
+- **Pan:** Click and drag anywhere on the canvas background to pan freely across wide subtrees.
+- **Zoom:** Use the `+` and `-` toolbar buttons, or hold `Ctrl` (or `Cmd`) while scrolling with your mouse wheel or trackpad. Zooming preserves horizontal root centering unless the user has manually panned.
+- **Reset Zoom:** Click the `100%` button or press `0` to restore default 100% zoom and re-center the root.
+- **Fit to View:** Press `F` or `f` to scale and center the complete tree bounding box within the viewport boundaries as an explicit user action.
 
 ### Traversal Playback
 - **Select Traversal Mode:** Toggle between **Preorder**, **Inorder**, and **Postorder** using the radio buttons in the canvas toolbar.
@@ -400,22 +412,21 @@ ParseVision/
 
 ## 11. Scope and Limitations
 
-ParseVision is designed as an educational tool focused on arithmetic expressions and syntax tree visualization. The following boundaries reflect its intentional scope:
+ParseVision is designed as an educational tool focused on formal expression grammars, syntax analysis, and syntax tree visualization. The following boundaries reflect its intentional scope:
 
-- **Arithmetic Scope:** The parser does not support full programming language constructs such as variable assignments (`x = 5`), statements, conditionals (`if`/`else`), loops, functions, or block scopes.
-- **Identifier Evaluation:** Variable identifiers (e.g., `a`, `b`, `total`) are valid AST nodes and render correctly in trees. However, evaluating expressions containing identifiers requires an environment bindings map. Evaluating without providing bindings throws a reference error.
-- **Division by Zero:** Division by zero (e.g., `10 / 0`) is grammatically valid and correctly rendered in the AST. In accordance with IEEE 754 float semantics, expression evaluation returns `Infinity` or `-Infinity`.
-- **Client-Side Execution:** The application executes entirely client-side in the browser runtime; no user data is transmitted to external servers.
+- **Expression-Level Scope:** The parser supports variable assignments (`x = 5`, `result = a + b * 2`, chained `a = b = 5`), arithmetic operations, modulo, and exponentiation. It does not support statement blocks, conditionals (`if`/`else`), loops, functions, or lexical scopes.
+- **Session-Scoped Identifier Evaluation:** Variable assignments persist in an in-memory session environment, enabling subsequent expressions (e.g., `X * 4`) to evaluate using previously assigned values. The environment is cleared via the **Clear** button. Unassigned identifiers throw an explicit reference error (`Unresolved identifier "x"`).
+- **Division and Modulo Semantics:** In accordance with IEEE 754 floating-point semantics, division by zero (e.g., `10 / 0`) produces `Infinity` or `-Infinity`. Modulo by zero (e.g., `10 % 0`) throws a runtime evaluation error.
+- **Client-Side Execution:** The application executes entirely client-side in the browser runtime; no user data or expression inputs are transmitted to external servers.
 
 ## 12. Potential Extensions
 
 The following ideas represent natural architectural extensions for future exploration:
 
-- **Dynamic Environment Binding:** An interactive variable binding editor allowing users to assign numeric values to identifiers and evaluate algebraic expressions dynamically.
-- **Step-by-Step AST Evaluation:** An animated reduction mode showing subtrees collapsing step-by-step into computed numerical values.
-- **Exponentiation Support:** Introducing a right-associative exponentiation operator (`^` or `**`) to demonstrate right-associative grammar rules and parsing.
-- **Breadth-First (Level-Order) Traversal:** Adding level-order traversal alongside depth-first traversal algorithms.
-- **Interactive Grammar Explorer:** An interactive rule inspection panel demonstrating which grammar production applies at each parsing step.
+- **Breadth-First (Level-Order) Traversal:** Adding level-order queue-based traversal alongside depth-first traversal algorithms with animated queue inspection.
+- **Step-by-Step AST Reduction:** An animated reduction mode demonstrating subtrees collapsing step-by-step into computed numerical values.
+- **Interactive Grammar Derivation View:** An interactive rule inspection panel demonstrating which grammar production applies at each parsing step.
+- **Multi-Expression Scripting:** Support for multi-line expression evaluation and sequential assignment scripts.
 
 ## 13. License
 
