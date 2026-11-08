@@ -3,7 +3,7 @@ import { showToast } from './toast.js';
 function countNodes(ast) {
   if (!ast || typeof ast !== 'object') return 0;
   let count = 1;
-  if (ast.type === 'BinaryExpression') {
+  if (ast.type === 'BinaryExpression' || ast.type === 'AssignmentExpression') {
     count += countNodes(ast.left) + countNodes(ast.right);
   } else if (ast.type === 'UnaryExpression') {
     count += countNodes(ast.argument);

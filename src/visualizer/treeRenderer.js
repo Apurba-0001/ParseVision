@@ -1,6 +1,6 @@
 import { NODE_DIMENSIONS, getNodeStyle, CONNECTOR_STYLE } from './nodeStyles.js';
 
-const SUPPORTED_TYPES = new Set(['BinaryExpression', 'UnaryExpression', 'Identifier', 'Literal', 'NumericLiteral']);
+const SUPPORTED_TYPES = new Set(['BinaryExpression', 'UnaryExpression', 'Identifier', 'Literal', 'NumericLiteral', 'AssignmentExpression']);
 
 function assert(condition, message) {
   if (!condition) throw new TypeError(message);
@@ -9,10 +9,10 @@ function assert(condition, message) {
 export function childrenFor(node) {
   assert(node !== null && typeof node === 'object', 'An AST node object is required for visualization.');
   assert(SUPPORTED_TYPES.has(node.type), `Unsupported AST node type "${node.type ?? 'unknown'}".`);
-  if (node.type === 'BinaryExpression') {
-    assert(typeof node.operator === 'string' && node.operator.length > 0, 'BinaryExpression requires an operator label.');
-    assert(node.left !== null && typeof node.left === 'object', 'BinaryExpression requires a valid left child node.');
-    assert(node.right !== null && typeof node.right === 'object', 'BinaryExpression requires a valid right child node.');
+  if (node.type === 'BinaryExpression' || node.type === 'AssignmentExpression') {
+    assert(typeof node.operator === 'string' && node.operator.length > 0, `${node.type} requires an operator label.`);
+    assert(node.left !== null && typeof node.left === 'object', `${node.type} requires a valid left child node.`);
+    assert(node.right !== null && typeof node.right === 'object', `${node.type} requires a valid right child node.`);
     return [node.left, node.right];
   }
   if (node.type === 'UnaryExpression') {
@@ -45,41 +45,67 @@ function buildSubtree(node, depth, path, ancestors) {
   nextAncestors.add(node);
   const label = nodeLabel(node);
   const children = childrenFor(node).map((child, index) => buildSubtree(child, depth + 1, `${path}.${index}`, nextAncestors));
-  const childrenWidth = children.reduce((total, child) => total + child.subtreeWidth, 0)
-    + Math.max(0, children.length - 1) * NODE_DIMENSIONS.siblingGap;
+
+  let leftExtent = NODE_DIMENSIONS.width / 2;
+  let rightExtent = NODE_DIMENSIONS.width / 2;
+  let relX = [];
+
+  if (children.length === 1) {
+    // UnaryExpression: single child positioned directly below parent on the same vertical centerline
+    const child = children[0];
+    leftExtent = Math.max(NODE_DIMENSIONS.width / 2, child.leftExtent);
+    rightExtent = Math.max(NODE_DIMENSIONS.width / 2, child.rightExtent);
+    relX = [0];
+  } else if (children.length === 2) {
+    // BinaryExpression: left and right subtree roots positioned symmetrically around parent
+    const leftChild = children[0];
+    const rightChild = children[1];
+
+    const minSiblingDistance = NODE_DIMENSIONS.width + NODE_DIMENSIONS.siblingGap;
+    const subtreeRequiredDistance = leftChild.rightExtent + rightChild.leftExtent + NODE_DIMENSIONS.siblingGap;
+    const distanceBetweenChildren = Math.max(minSiblingDistance, subtreeRequiredDistance);
+
+    const d = distanceBetweenChildren / 2;
+    leftExtent = d + leftChild.leftExtent;
+    rightExtent = d + rightChild.rightExtent;
+    relX = [-d, d];
+  }
+
+  const subtreeWidth = leftExtent + rightExtent;
+
   return {
     id: path,
     type: node.type,
     label,
     depth,
     width: NODE_DIMENSIONS.width,
-    subtreeWidth: Math.max(NODE_DIMENSIONS.width, childrenWidth),
+    subtreeWidth,
+    leftExtent,
+    rightExtent,
     children,
+    relX,
     astNode: node
   };
 }
 
-function assignPositions(subtree, left, nodes, edges) {
-  const x = left + subtree.subtreeWidth / 2;
-  const y = NODE_DIMENSIONS.margin + subtree.depth * NODE_DIMENSIONS.levelGap;
+function assignPositions(subtree, currentX, nodes, edges, startY = NODE_DIMENSIONS.margin) {
+  const y = startY + subtree.depth * NODE_DIMENSIONS.levelGap;
   nodes.push({
     id: subtree.id,
     type: subtree.type,
     label: subtree.label,
     depth: subtree.depth,
-    x,
+    x: currentX,
     y,
     width: NODE_DIMENSIONS.width,
     height: NODE_DIMENSIONS.height,
-    astNode: subtree.astNode
+    astNode: subtree.astNode,
+    node: subtree.astNode
   });
-  const childrenWidth = subtree.children.reduce((total, child) => total + child.subtreeWidth, 0)
-    + Math.max(0, subtree.children.length - 1) * NODE_DIMENSIONS.siblingGap;
-  let childLeft = left + (subtree.subtreeWidth - childrenWidth) / 2;
-  for (const child of subtree.children) {
+  for (let i = 0; i < subtree.children.length; i++) {
+    const child = subtree.children[i];
     edges.push({ from: subtree.id, to: child.id });
-    assignPositions(child, childLeft, nodes, edges);
-    childLeft += child.subtreeWidth + NODE_DIMENSIONS.siblingGap;
+    assignPositions(child, currentX + subtree.relX[i], nodes, edges, startY);
   }
 }
 
@@ -87,14 +113,38 @@ function assignPositions(subtree, left, nodes, edges) {
 export function layoutAst(ast) {
   const root = buildSubtree(ast, 0, 'root', new Set());
   const nodes = [];
-  const edges = [];
-  assignPositions(root, NODE_DIMENSIONS.margin, nodes, edges);
-  const maximumDepth = Math.max(...nodes.map((node) => Math.round((node.y - NODE_DIMENSIONS.margin) / NODE_DIMENSIONS.levelGap)));
+  const rawEdges = [];
+  const margin = NODE_DIMENSIONS.margin || 24;
+  const rootX = Math.ceil(root.leftExtent + margin);
+  const width = Math.ceil(root.leftExtent + root.rightExtent + margin * 2);
+  assignPositions(root, rootX, nodes, rawEdges, margin);
+
+  const nodeMap = new Map(nodes.map(n => [n.id, n]));
+  const edges = rawEdges.map(e => {
+    const parent = nodeMap.get(e.from);
+    const child = nodeMap.get(e.to);
+    const parentX = parent ? parent.x : 0;
+    const parentY = parent ? parent.y : 0;
+    const childX = child ? child.x : 0;
+    const childY = child ? child.y : 0;
+    return {
+      from: e.from,
+      to: e.to,
+      parentX,
+      parentY,
+      childX,
+      childY,
+      d: generateBezierPath(parentX, parentY, childX, childY)
+    };
+  });
+
+  const maximumDepth = Math.max(...nodes.map((node) => Math.round((node.y - margin) / NODE_DIMENSIONS.levelGap)));
   return {
     nodes,
     edges,
-    width: Math.ceil(root.subtreeWidth + NODE_DIMENSIONS.margin * 2),
-    height: NODE_DIMENSIONS.margin * 2 + NODE_DIMENSIONS.height + maximumDepth * NODE_DIMENSIONS.levelGap
+    width,
+    height: margin * 2 + NODE_DIMENSIONS.height + maximumDepth * NODE_DIMENSIONS.levelGap,
+    rootX
   };
 }
 
@@ -117,21 +167,21 @@ export function mapAstToNodeIds(ast) {
 
 /**
  * Calculates responsive pixel coordinates for the canvas and export SVG.
+ * Computes pure tree geometry independent of viewport dimensions.
  * Uses uniform 64x64 node sizing and subtree widths so subtrees, nodes,
  * and labels never collide or overlap.
  */
 export function computeCanvasCoordinates(ast) {
-  if (!ast) return { nodes: [], edges: [], width: 780, height: 340 };
+  if (!ast) return { nodes: [], edges: [], width: 780, height: 340, rootX: 390 };
   const root = buildSubtree(ast, 0, 'root', new Set());
   const nodes = [];
   const rawEdges = [];
 
-  // Canvas base width is 780px. If tree is wider, expand with padding.
-  const canvasWidth = Math.max(780, Math.ceil(root.subtreeWidth + 96));
-  const startLeft = Math.max(24, Math.floor((canvasWidth - root.subtreeWidth) / 2));
+  const padding = 48;
+  const rootX = Math.ceil(root.leftExtent + padding);
+  const width = Math.ceil(root.leftExtent + root.rightExtent + padding * 2);
 
-  function assignCanvasPositions(subtree, left) {
-    const x = Math.round(left + subtree.subtreeWidth / 2);
+  function assignCanvasPositions(subtree, currentX) {
     const y = 20 + subtree.depth * NODE_DIMENSIONS.levelGap;
 
     nodes.push({
@@ -139,24 +189,22 @@ export function computeCanvasCoordinates(ast) {
       type: subtree.type,
       label: subtree.label,
       node: subtree.astNode,
+      astNode: subtree.astNode,
       depth: subtree.depth,
-      x,
+      x: currentX,
       y,
       width: NODE_DIMENSIONS.width,
       height: NODE_DIMENSIONS.height
     });
 
-    const childrenWidth = subtree.children.reduce((total, child) => total + child.subtreeWidth, 0)
-      + Math.max(0, subtree.children.length - 1) * NODE_DIMENSIONS.siblingGap;
-    let childLeft = left + (subtree.subtreeWidth - childrenWidth) / 2;
-    for (const child of subtree.children) {
+    for (let i = 0; i < subtree.children.length; i++) {
+      const child = subtree.children[i];
       rawEdges.push({ from: subtree.id, to: child.id });
-      assignCanvasPositions(child, childLeft);
-      childLeft += child.subtreeWidth + NODE_DIMENSIONS.siblingGap;
+      assignCanvasPositions(child, currentX + subtree.relX[i]);
     }
   }
 
-  assignCanvasPositions(root, startLeft);
+  assignCanvasPositions(root, rootX);
 
   const nodeMap = new Map(nodes.map(n => [n.id, n]));
   const edges = rawEdges.map(e => {
@@ -178,9 +226,9 @@ export function computeCanvasCoordinates(ast) {
   });
 
   const maxY = Math.max(...nodes.map(n => n.y), 20);
-  const canvasHeight = Math.max(340, maxY + 120);
+  const canvasHeight = Math.max(340, maxY + NODE_DIMENSIONS.totalHeight + 40);
 
-  return { nodes, edges, width: canvasWidth, height: canvasHeight };
+  return { nodes, edges, width, height: canvasHeight, rootX, treeWidth: width, treeHeight: canvasHeight };
 }
 
 /**
@@ -225,13 +273,16 @@ export function renderTree(container, ast, options = {}) {
 
   if (!nodesContainer || !edgesGroup) return;
 
-  const { nodes, edges, width, height } = computeCanvasCoordinates(ast);
+  const { nodes, edges, width, height, rootX, treeWidth, treeHeight } = computeCanvasCoordinates(ast);
 
   if (plane && plane.style) {
     plane.style.width = `${width}px`;
     plane.style.height = `${height}px`;
     plane.style.minWidth = `${width}px`;
     plane.style.minHeight = `${height}px`;
+    plane.__rootX = rootX;
+    plane.__treeWidth = treeWidth || width;
+    plane.__treeHeight = treeHeight || height;
   }
 
   const svg = plane.querySelector('svg');
@@ -313,7 +364,7 @@ export function renderTree(container, ast, options = {}) {
     });
   });
 
-  return { nodes, edges };
+  return { nodes, edges, width, height, rootX };
 }
 
 /**

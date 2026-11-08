@@ -1,8 +1,9 @@
-const BINARY_OPERATORS = new Set(['+', '-', '*', '/']);
+const BINARY_OPERATORS = new Set(['+', '-', '*', '/', '%', '**', '^']);
 const UNARY_OPERATORS = new Set(['+', '-']);
+const ASSIGNMENT_OPERATORS = new Set(['=']);
 const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const NUMBER_PATTERN = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
-const NODE_TYPES = new Set(['Literal', 'Identifier', 'BinaryExpression', 'UnaryExpression']);
+const NODE_TYPES = new Set(['Literal', 'Identifier', 'BinaryExpression', 'UnaryExpression', 'AssignmentExpression']);
 
 function assert(condition, message) {
   if (!condition) throw new TypeError(message);
@@ -12,7 +13,15 @@ function isNode(value) {
   return value !== null && typeof value === 'object' && NODE_TYPES.has(value.type);
 }
 
-/** Create a BinaryExpression with one of ParseVision's four arithmetic operators. */
+/** Create an AssignmentExpression connecting an identifier target to an assigned expression. */
+export function assignmentExpression(operator, left, right) {
+  assert(ASSIGNMENT_OPERATORS.has(operator), `Unsupported assignment operator "${operator}".`);
+  assert(isNode(left) && left.type === 'Identifier', 'AssignmentExpression left must be an Identifier AST node.');
+  assert(isNode(right), 'AssignmentExpression right must be an AST node.');
+  return { type: 'AssignmentExpression', operator, left, right };
+}
+
+/** Create a BinaryExpression with one of ParseVision's arithmetic operators. */
 export function binaryExpression(operator, left, right) {
   assert(BINARY_OPERATORS.has(operator), `Unsupported binary operator "${operator}".`);
   assert(isNode(left), 'BinaryExpression left must be an AST node.');

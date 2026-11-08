@@ -160,6 +160,7 @@ export function createOutputPanel(options = {}) {
   let currentZoom = 1;
   let panX = 0;
   let panY = 0;
+  let userHasPanned = false;
 
   function applyTransform(zoom, newPanX, newPanY) {
     currentZoom = Math.min(Math.max(zoom, MIN_ZOOM), MAX_ZOOM);
@@ -172,9 +173,30 @@ export function createOutputPanel(options = {}) {
     btnZoomReset.setAttribute('aria-label', `Reset zoom to 100%, currently ${percent}%`);
   }
 
+  function centerRoot(zoom = 1.0) {
+    if (!canvasViewport || !coordinatePlane || !currentAst) {
+      applyTransform(1, 0, 0);
+      return;
+    }
+    const viewportW = canvasViewport.clientWidth || 800;
+    const rootX = coordinatePlane.__rootX ?? 100;
+    currentZoom = Math.min(Math.max(zoom, MIN_ZOOM), MAX_ZOOM);
+    const nextPanX = Math.round(viewportW / 2 - currentZoom * rootX);
+    const nextPanY = 24;
+    userHasPanned = false;
+    applyTransform(currentZoom, nextPanX, nextPanY);
+  }
+
   function zoomAt(targetZoom, anchorX, anchorY) {
     const clampedTarget = Math.min(Math.max(targetZoom, MIN_ZOOM), MAX_ZOOM);
     if (clampedTarget === currentZoom) return;
+
+    if (!userHasPanned && coordinatePlane?.__rootX != null) {
+      const viewportW = canvasViewport.clientWidth || 800;
+      const nextPanX = Math.round(viewportW / 2 - clampedTarget * coordinatePlane.__rootX);
+      applyTransform(clampedTarget, nextPanX, panY);
+      return;
+    }
 
     const contentX = (anchorX - panX) / currentZoom;
     const contentY = (anchorY - panY) / currentZoom;
@@ -195,63 +217,35 @@ export function createOutputPanel(options = {}) {
     if (!viewportW || !viewportH) {
       return;
     }
-    const planeW = coordinatePlane.offsetWidth || 780;
-    const planeH = coordinatePlane.offsetHeight || 340;
+    const planeW = coordinatePlane.__treeWidth || coordinatePlane.offsetWidth || 780;
+    const planeH = coordinatePlane.__treeHeight || coordinatePlane.offsetHeight || 340;
 
-    const isMobile = viewportW < 640;
-    const padX = isMobile ? 16 : 40;
-    const padY = isMobile ? 16 : 40;
+    const padX = 32;
+    const padY = 32;
     const availW = Math.max(100, viewportW - padX * 2);
     const availH = Math.max(100, viewportH - padY * 2);
 
     const scaleX = availW / planeW;
     const scaleY = availH / planeH;
     const idealScale = Math.min(scaleX, scaleY);
-
-    // On mobile (< 640px), enforce a predictable initial zoom floor (>= 0.75)
-    // so AST nodes remain legible and usable instead of shrinking to microscopic specks.
-    const initialFloor = isMobile ? 0.75 : MIN_ZOOM;
-    const targetZoom = Math.min(Math.max(idealScale, initialFloor), 1.0);
+    const targetZoom = Math.min(Math.max(idealScale, MIN_ZOOM), 1.0);
 
     const renderedW = planeW * targetZoom;
     const renderedH = planeH * targetZoom;
 
-    let nextPanX = Math.round((viewportW - renderedW) / 2);
-    let nextPanY = Math.round((viewportH - renderedH) / 2);
-    if (isMobile) {
-      nextPanY = 20;
-    } else {
-      if (renderedH > viewportH - 40) {
-        nextPanY = 32;
-      }
-      if (renderedW > viewportW - 40 && nextPanX < 24) {
-        nextPanX = 24;
-      }
-    }
+    const nextPanX = Math.round((viewportW - renderedW) / 2);
+    const nextPanY = Math.round((viewportH - renderedH) / 2);
 
+    userHasPanned = true;
     applyTransform(targetZoom, nextPanX, nextPanY);
   }
 
   function centerTree() {
-    fitToView();
+    centerRoot(currentZoom);
   }
 
   function resetZoom() {
-    if (!canvasViewport || !coordinatePlane) {
-      applyTransform(1, 0, 0);
-      return;
-    }
-    const viewportW = canvasViewport.clientWidth || 800;
-    const viewportH = canvasViewport.clientHeight || 400;
-    const planeW = coordinatePlane.offsetWidth || 780;
-    const planeH = coordinatePlane.offsetHeight || 340;
-
-    const nextPanX = Math.round((viewportW - planeW) / 2);
-    let nextPanY = Math.round((viewportH - planeH) / 2);
-    if (planeH > viewportH - 40) {
-      nextPanY = 32;
-    }
-    applyTransform(1, nextPanX, nextPanY);
+    centerRoot(1.0);
   }
 
   btnZoomIn.addEventListener('click', () => {
@@ -316,6 +310,7 @@ export function createOutputPanel(options = {}) {
     const dy = e.clientY - startPointerY;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
       hasDragged = true;
+      userHasPanned = true;
     }
     applyTransform(currentZoom, startPanX + dx, startPanY + dy);
   }
@@ -350,15 +345,19 @@ export function createOutputPanel(options = {}) {
 
     if (e.key === 'ArrowUp') {
       e.preventDefault();
+      userHasPanned = true;
       applyTransform(currentZoom, panX, panY + 50);
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
+      userHasPanned = true;
       applyTransform(currentZoom, panX, panY - 50);
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
+      userHasPanned = true;
       applyTransform(currentZoom, panX + 50, panY);
     } else if (e.key === 'ArrowRight') {
       e.preventDefault();
+      userHasPanned = true;
       applyTransform(currentZoom, panX - 50, panY);
     } else if (e.key === '+' || e.key === '=') {
       e.preventDefault();
@@ -652,7 +651,9 @@ export function createOutputPanel(options = {}) {
 
       if (targetNode) {
         let desc = `${targetNode.type}`;
-        if (targetNode.type === 'BinaryExpression') {
+        if (targetNode.type === 'AssignmentExpression') {
+          desc = `AssignmentExpression: operator '${targetNode.operator}'`;
+        } else if (targetNode.type === 'BinaryExpression') {
           desc = `BinaryExpression: operator '${targetNode.operator}'`;
         } else if (targetNode.type === 'UnaryExpression') {
           desc = `UnaryExpression: operator '${targetNode.operator}'`;
@@ -691,11 +692,14 @@ export function createOutputPanel(options = {}) {
     currentStepIndex = -1;
 
     if (ast) {
-      renderTree(coordinatePlane, ast, {
+      const renderResult = renderTree(coordinatePlane, ast, {
         onNodeClick: handleNodeClick
       });
+      if (renderResult?.rootX != null) {
+        coordinatePlane.__rootX = renderResult.rootX;
+      }
       steps = computeSteps(ast, activeMode);
-      fitToView();
+      centerRoot(1.0);
     } else {
       renderEmptyTree(coordinatePlane);
       steps = [];
@@ -731,8 +735,8 @@ export function createOutputPanel(options = {}) {
 
       if (resizeRaf) cancelAnimationFrame(resizeRaf);
       resizeRaf = requestAnimationFrame(() => {
-        if (currentAst && !isPanning && !hasDragged) {
-          fitToView();
+        if (currentAst && !isPanning && !userHasPanned) {
+          centerRoot(currentZoom);
         }
       });
     });

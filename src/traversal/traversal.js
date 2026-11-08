@@ -1,4 +1,4 @@
-const SUPPORTED_TYPES = new Set(['Literal', 'Identifier', 'BinaryExpression', 'UnaryExpression']);
+const SUPPORTED_TYPES = new Set(['Literal', 'Identifier', 'BinaryExpression', 'UnaryExpression', 'AssignmentExpression']);
 
 function assert(condition, message) {
   if (!condition) throw new TypeError(message);
@@ -13,10 +13,10 @@ export function validateNode(node, visited = new Set()) {
   assert(!visited.has(node), 'AST cannot contain circular references.');
   assert(SUPPORTED_TYPES.has(node.type), `Unsupported AST node type "${node.type}".`);
 
-  if (node.type === 'BinaryExpression') {
-    assert(typeof node.operator === 'string' && node.operator.length > 0, 'BinaryExpression requires an operator.');
-    assert(node.left !== null && typeof node.left === 'object', 'BinaryExpression requires a valid left child node.');
-    assert(node.right !== null && typeof node.right === 'object', 'BinaryExpression requires a valid right child node.');
+  if (node.type === 'BinaryExpression' || node.type === 'AssignmentExpression') {
+    assert(typeof node.operator === 'string' && node.operator.length > 0, `${node.type} requires an operator.`);
+    assert(node.left !== null && typeof node.left === 'object', `${node.type} requires a valid left child node.`);
+    assert(node.right !== null && typeof node.right === 'object', `${node.type} requires a valid right child node.`);
   } else if (node.type === 'UnaryExpression') {
     assert(typeof node.operator === 'string' && node.operator.length > 0, 'UnaryExpression requires an operator.');
     assert(node.argument !== null && typeof node.argument === 'object', 'UnaryExpression requires a valid argument child node.');
@@ -32,11 +32,13 @@ export function validateNode(node, visited = new Set()) {
 
 /**
  * Format an AST node into a consistent string representation:
- * Identifier(name), Literal(raw|value), BinaryExpression(op), UnaryExpression(op).
+ * Identifier(name), Literal(raw|value), BinaryExpression(op), UnaryExpression(op), AssignmentExpression(op).
  */
 export function formatNode(node) {
   validateNode(node);
   switch (node.type) {
+    case 'AssignmentExpression':
+      return `AssignmentExpression(${node.operator})`;
     case 'BinaryExpression':
       return `BinaryExpression(${node.operator})`;
     case 'UnaryExpression':
@@ -70,7 +72,7 @@ export function preorder(node, options = {}) {
 
     result.push(resolveRepresentation(current, options));
 
-    if (current.type === 'BinaryExpression') {
+    if (current.type === 'BinaryExpression' || current.type === 'AssignmentExpression') {
       walk(current.left, nextVisited);
       walk(current.right, nextVisited);
     } else if (current.type === 'UnaryExpression') {
@@ -82,7 +84,7 @@ export function preorder(node, options = {}) {
 }
 
 /**
- * Inorder traversal (Left → Node → Right for binary expressions).
+ * Inorder traversal (Left → Node → Right for binary and assignment expressions).
  * For unary expressions, visits operator before operand by documented convention,
  * as inorder traversal is naturally defined for binary trees.
  */
@@ -95,7 +97,7 @@ export function inorder(node, options = {}) {
 
     const repr = resolveRepresentation(current, options);
 
-    if (current.type === 'BinaryExpression') {
+    if (current.type === 'BinaryExpression' || current.type === 'AssignmentExpression') {
       walk(current.left, nextVisited);
       result.push(repr);
       walk(current.right, nextVisited);
@@ -125,7 +127,7 @@ export function postorder(node, options = {}) {
 
     const repr = resolveRepresentation(current, options);
 
-    if (current.type === 'BinaryExpression') {
+    if (current.type === 'BinaryExpression' || current.type === 'AssignmentExpression') {
       walk(current.left, nextVisited);
       walk(current.right, nextVisited);
       result.push(repr);

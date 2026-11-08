@@ -1,6 +1,6 @@
 import { UNSUPPORTED_OPERATORS } from './grammar.js';
 
-const OPERATORS = new Set(['+', '-', '*', '/']);
+const OPERATORS = new Set(['+', '-', '*', '/', '%', '^', '=']);
 const PARENTHESES = new Set(['(', ')']);
 const IDENTIFIER_START = /[A-Za-z_]/;
 const IDENTIFIER_PART = /[A-Za-z0-9_]/;
@@ -55,7 +55,20 @@ export function tokenize(source) {
     const character = source[index];
     if (/\s/.test(character)) { index += 1; continue; }
     if (character === '*' && source[index + 1] === '*') {
-      throw new TokenizeError('Unsupported operator "**"', index, index + 2);
+      tokens.push({ type: 'OPERATOR', value: '**', start: index, end: index + 2 });
+      index += 2;
+      continue;
+    }
+    if (
+      (character === '=' && source[index + 1] === '=') ||
+      (character === '!' && source[index + 1] === '=') ||
+      (character === '<' && source[index + 1] === '=') ||
+      (character === '>' && source[index + 1] === '=') ||
+      (character === '&' && source[index + 1] === '&') ||
+      (character === '|' && source[index + 1] === '|')
+    ) {
+      const op = source.slice(index, index + 2);
+      throw new TokenizeError(`Unsupported operator "${op}"`, index, index + 2);
     }
     if (OPERATORS.has(character)) {
       tokens.push({ type: 'OPERATOR', value: character, start: index, end: index + 1 });

@@ -11,6 +11,15 @@ export const ROOT_NODE_STYLE = Object.freeze({
 
 export const NODE_STYLES = Object.freeze({
   Root: ROOT_NODE_STYLE,
+  AssignmentExpression: Object.freeze({
+    fill: '#8B5CF6',
+    border: '#6D28D9',
+    stroke: '#6D28D9',
+    text: '#FFFFFF',
+    badgeBg: '#6D28D9',
+    badgeText: '#FFFFFF',
+    label: 'AssignmentExpression'
+  }),
   BinaryExpression: Object.freeze({
     fill: '#3B82F6',
     border: '#1D4ED8',
@@ -112,6 +121,14 @@ export function getLegendItems() {
       text: ROOT_NODE_STYLE.text,
       fontBold: true,
       classNames: 'font-semibold'
+    },
+    {
+      type: 'AssignmentExpression',
+      label: NODE_STYLES.AssignmentExpression.label,
+      fill: NODE_STYLES.AssignmentExpression.fill,
+      border: NODE_STYLES.AssignmentExpression.border,
+      text: NODE_STYLES.AssignmentExpression.text,
+      classNames: ''
     },
     {
       type: 'BinaryExpression',

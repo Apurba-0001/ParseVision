@@ -1,6 +1,12 @@
-import { binaryExpression, identifier, literal, unaryExpression } from './ast.js';
+import { assignmentExpression, binaryExpression, identifier, literal, unaryExpression } from './ast.js';
 import { tokenize } from './tokenizer.js';
-import { ADDITIVE_OPERATORS, MULTIPLICATIVE_OPERATORS, UNARY_OPERATORS, UNSUPPORTED_OPERATORS } from './grammar.js';
+import {
+  ADDITIVE_OPERATORS,
+  EXPONENTIATION_OPERATORS,
+  MULTIPLICATIVE_OPERATORS,
+  UNARY_OPERATORS,
+  UNSUPPORTED_OPERATORS
+} from './grammar.js';
 
 export class ParseError extends SyntaxError {
   constructor(message, token) {
@@ -12,7 +18,7 @@ export class ParseError extends SyntaxError {
   }
 }
 
-/** A recursive-descent parser for ParseVision's arithmetic-expression grammar. */
+/** A recursive-descent parser for ParseVision's expression grammar. */
 export class Parser {
   constructor(tokens) {
     if (!Array.isArray(tokens) || tokens.length === 0) throw new TypeError('Parser requires a non-empty token array.');
@@ -32,12 +38,35 @@ export class Parser {
 
   parse() {
     if (this.peek().type === 'EOF') throw new ParseError('Expression cannot be empty', this.peek());
-    const expression = this.parseExpression();
+    const expression = this.parseAssignment();
     if (this.peek().type !== 'EOF') throw this.error(`Unexpected trailing token "${this.peek().value}"`);
     return expression;
   }
 
+  parseAssignment() {
+    if (this.peek().type === 'OPERATOR' && this.peek().value === '=') {
+      throw this.error('Missing assignment target before "="');
+    }
+    const target = this.parseAdditive();
+    if (this.peek().type === 'OPERATOR' && this.peek().value === '=') {
+      const equalsToken = this.advance();
+      if (target.type !== 'Identifier') {
+        throw this.error('Invalid assignment target', equalsToken);
+      }
+      if (this.peek().type === 'EOF') {
+        throw this.error('Missing right-hand assignment expression', equalsToken);
+      }
+      const value = this.parseAssignment();
+      return assignmentExpression('=', target, value);
+    }
+    return target;
+  }
+
   parseExpression() {
+    return this.parseAssignment();
+  }
+
+  parseAdditive() {
     const term = this.parseTerm();
     return this.parseEPrime(term);
   }
@@ -45,6 +74,9 @@ export class Parser {
   parseEPrime(left) {
     const operator = this.match(ADDITIVE_OPERATORS);
     if (operator) {
+      if (this.peek().type === 'EOF') {
+        throw this.error(`Missing right operand for "${operator.value}"`, operator);
+      }
       const right = this.parseTerm();
       const node = binaryExpression(operator.value, left, right);
       return this.parseEPrime(node);
@@ -63,6 +95,9 @@ export class Parser {
   parseTPrime(left) {
     const operator = this.match(MULTIPLICATIVE_OPERATORS);
     if (operator) {
+      if (this.peek().type === 'EOF') {
+        throw this.error(`Missing right operand for "${operator.value}"`, operator);
+      }
       const right = this.parseUnary();
       const node = binaryExpression(operator.value, left, right);
       return this.parseTPrime(node);
@@ -73,13 +108,32 @@ export class Parser {
     return left;
   }
 
-  parseAdditive() { return this.parseExpression(); }
-  parseMultiplicative() { return this.parseTerm(); }
+  parseMultiplicative() {
+    return this.parseTerm();
+  }
 
   parseUnary() {
     const operator = this.match(UNARY_OPERATORS);
-    if (operator) return unaryExpression(operator.value, this.parseUnary());
-    return this.parsePrimary();
+    if (operator) {
+      if (this.peek().type === 'EOF') {
+        throw this.error(`Missing operand after "${operator.value}"`, operator);
+      }
+      return unaryExpression(operator.value, this.parseUnary());
+    }
+    return this.parsePower();
+  }
+
+  parsePower() {
+    const base = this.parsePrimary();
+    const operator = this.match(EXPONENTIATION_OPERATORS);
+    if (operator) {
+      if (this.peek().type === 'EOF') {
+        throw this.error(`Missing right operand for exponentiation operator "${operator.value}"`, operator);
+      }
+      const exponent = this.parseUnary();
+      return binaryExpression(operator.value, base, exponent);
+    }
+    return base;
   }
 
   parsePrimary() {
@@ -109,4 +163,4 @@ export class Parser {
 }
 
 export function parse(source) { return new Parser(tokenize(source)).parse(); }
-export { evaluate } from './evaluator.js';
+export { evaluate, getEnvironment, resetEnvironment } from './evaluator.js';

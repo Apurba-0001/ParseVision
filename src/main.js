@@ -3,7 +3,7 @@ import { createEditor } from './components/editor.js';
 import { createOutputPanel } from './components/outputPanel.js';
 import { createInspectAstPanel } from './components/inspectAstPanel.js';
 import { showToast } from './components/toast.js';
-import { parse } from './parser/parser.js';
+import { parse, evaluate, resetEnvironment } from './parser/parser.js';
 import { exportTreeAsPng } from './visualizer/treeRenderer.js';
 
 const app = document.querySelector('#app');
@@ -15,7 +15,7 @@ function calculateTreeMetrics(node) {
     if (!current || typeof current !== 'object') return;
     count += 1;
     if (depth > maxDepth) maxDepth = depth;
-    if (current.type === 'BinaryExpression') {
+    if (current.type === 'BinaryExpression' || current.type === 'AssignmentExpression') {
       walk(current.left, depth + 1);
       walk(current.right, depth + 1);
     } else if (current.type === 'UnaryExpression') {
@@ -132,8 +132,22 @@ function generate() {
     if (headerNodeCount) headerNodeCount.textContent = String(metrics.count);
     if (headerMaxDepth) headerMaxDepth.textContent = String(metrics.maxDepth);
 
-    // 2. Update telemetry
-    editor.setDiagnostic(true, '', parseTime);
+    // 2. Update telemetry with evaluation result if evaluable
+    let evalMessage = '';
+    try {
+      const evalVal = evaluate(ast);
+      if (typeof evalVal === 'number' && !Number.isNaN(evalVal)) {
+        if (ast.type === 'AssignmentExpression') {
+          evalMessage = `Assignment stored: <strong>${ast.left.name} = ${evalVal}</strong> (parsed in <strong>${parseTime}ms</strong>)`;
+        } else {
+          evalMessage = `Evaluates to <strong>${evalVal}</strong> (parsed in <strong>${parseTime}ms</strong>)`;
+        }
+      }
+    } catch {
+      // Unresolved identifiers generate AST without failing
+    }
+
+    editor.setDiagnostic(true, evalMessage, parseTime);
 
     // 3. Update JSON Inspector
     inspectAst.update(ast, source);
@@ -162,6 +176,8 @@ function clear() {
     window.__parsevision_ast = null;
   }
   updateExportState(false);
+
+  resetEnvironment();
 
   editor.input.value = '';
   output.clearAst();

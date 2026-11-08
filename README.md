@@ -148,30 +148,35 @@ For this expression, the traversal algorithms produce the following visit orders
 
 ### Formal Grammar
 
-ParseVision's parser implements an unambiguous, non-left-recursive arithmetic grammar:
+ParseVision's parser implements an unambiguous, non-left-recursive expression grammar supporting assignment, arithmetic operations, and exponentiation:
 
 ```text
+A  → id = A | E
 E  → T E'
 E' → + T E' | - T E' | ε
 T  → U T'
-T' → * U T' | / U T' | ε
-U  → + U | - U | P
-P  → ( E ) | id | num
+T' → * U T' | / U T' | % U T' | ε
+U  → + U | - U | X
+X  → P ** U | P ^ U | P
+P  → ( A ) | id | num
 ```
 
-- Non-terminals: `E` (expression), `E'` (additive continuation), `T` (term), `T'` (multiplicative continuation), `U` (unary expression), `P` (primary expression).
-- Terminals: `+`, `-`, `*`, `/`, `(`, `)`, `id` (identifier), `num` (numeric literal), `ε` (empty production).
+- Non-terminals: `A` (assignment expression), `E` (additive expression), `E'` (additive continuation), `T` (term / multiplicative expression), `T'` (multiplicative continuation), `U` (unary expression), `X` (exponentiation expression), `P` (primary expression).
+- Terminals: `=`, `+`, `-`, `*`, `/`, `%`, `**`, `^`, `(`, `)`, `id` (identifier), `num` (numeric literal), `ε` (empty production).
 
 ### Supported Language Constructs
 
 | Construct | Syntax | Example | Description |
 |---|---|---|---|
+| **Assignment** | `=` | `X = 1 + 2` | Variable assignment, right-associative, lowest precedence |
 | **Addition** | `+` | `a + b` | Infix binary addition, left-associative |
 | **Subtraction** | `-` | `a - b` | Infix binary subtraction, left-associative |
 | **Multiplication** | `*` | `a * b` | Infix binary multiplication, left-associative |
 | **Division** | `/` | `a / b` | Infix binary division, left-associative |
+| **Modulo** | `%` | `10 % 3` | Infix binary remainder, left-associative |
+| **Exponentiation** | `**`, `^` | `2 ** 3`, `2 ^ 3` | Power operation, right-associative (`2 ** 3 ** 2 === 512`) |
 | **Unary Plus** | `+` | `+a` | Prefix unary sign, preserves operand value |
-| **Unary Minus** | `-` | `-a` | Prefix unary negation |
+| **Unary Minus** | `-` | `-a` | Prefix unary negation, standard algebraic convention (`-2 ** 2 === -4`) |
 | **Parentheses** | `( ... )` | `(a + b) * c` | Grouping override for operator precedence |
 | **Numeric Literals** | `\d+`, `\d*\.\d+` | `42`, `3.14`, `.5`, `5.` | Integer and decimal numbers with digits on either side of decimal point |
 | **Identifiers** | `[A-Za-z_][A-Za-z0-9_]*` | `x`, `total`, `item_count` | Variable and symbol names |
@@ -180,43 +185,53 @@ P  → ( E ) | id | num
 
 | Precedence | Level | Operator | Associativity | Description |
 |---|---|---|---|---|
-| **Highest** | 4 | `( )`, `id`, `num` | None | Grouping parentheses, variable identifiers, numeric literals |
-| | 3 | `+` (unary), `-` (unary) | Right-to-Left (Prefix) | Prefix positive and negation signs |
-| | 2 | `*`, `/` | Left-to-Right | Multiplicative operations |
-| **Lowest** | 1 | `+`, `-` | Left-to-Right | Additive operations |
+| **Highest** | 6 | `( )`, `id`, `num` | None | Grouping parentheses, variable identifiers, numeric literals |
+| | 5 | `+` (unary), `-` (unary) | Right-to-Left (Prefix) | Prefix positive and negation signs |
+| | 4 | `**`, `^` | Right-to-Left | Exponentiation operations |
+| | 3 | `*`, `/`, `%` | Left-to-Right | Multiplicative and modulo operations |
+| | 2 | `+`, `-` | Left-to-Right | Additive operations |
+| **Lowest** | 1 | `=` | Right-to-Left | Variable assignment |
 
 ### Unsupported Syntax
 
-ParseVision is designed specifically for arithmetic expression parsing. The following constructs are outside the language grammar and are intercepted with targeted lexical or syntax diagnostics:
+The following constructs are outside the language grammar and are intercepted with targeted lexical or syntax diagnostics:
 
-- **Modulo and Exponentiation:** `%`, `**`, and `^` are identified as unsupported operators.
-- **Programming Language Constructs:** Variable assignments (`=`), comparison operators (`==`, `<`), logical operators (`&&`, `||`), bitwise operators, control-flow statements (`if`, `while`), and function calls are not supported.
+- **Comparison Operators:** `==`, `!=`, `<`, `>`, `<=`, `>=`.
+- **Logical and Bitwise Operators:** `&&`, `||`, `!`, `&`, `|`, `~`.
+- **Control Flow and Statements:** `if`, `while`, `for`, semicolons, and function declarations.
 
 ## 5. AST Node Model
 
-The parser generates four plain JavaScript object node types. Each node represents a distinct syntactic unit without circular references or DOM coupling.
+The parser generates five plain JavaScript object node types. Each node represents a distinct syntactic unit without circular references or DOM coupling.
 
 ### Node Definitions
 
-#### 1. `BinaryExpression`
+#### 1. `AssignmentExpression`
+Represents an assignment operation binding an expression to a variable:
+- `type`: `"AssignmentExpression"`
+- `operator`: `"="`
+- `left`: Target `Identifier` AST node
+- `right`: Value child AST node
+
+#### 2. `BinaryExpression`
 Represents an infix binary operation connecting two subtrees:
 - `type`: `"BinaryExpression"`
-- `operator`: `"+"` | `"-"` | `"*"` | `"/"`
+- `operator`: `"+"` | `"-"` | `"*"` | `"/"` | `"%"` | `"**"` | `"^"`
 - `left`: Child AST node
 - `right`: Child AST node
 
-#### 2. `UnaryExpression`
+#### 3. `UnaryExpression`
 Represents a prefix unary operator applied to a single operand:
 - `type`: `"UnaryExpression"`
 - `operator`: `"+"` | `"-"`
 - `argument`: Child AST node
 
-#### 3. `Identifier`
+#### 4. `Identifier`
 Represents a variable or symbol name:
 - `type`: `"Identifier"`
 - `name`: String identifier name (e.g., `"x"`, `"total"`)
 
-#### 4. `Literal`
+#### 5. `Literal`
 Represents a concrete numeric value:
 - `type`: `"Literal"`
 - `value`: Evaluated numeric value as an IEEE 754 number (e.g., `42`, `3.14`)
@@ -231,7 +246,8 @@ Each node type is visually distinguished on the canvas using semantic tokens:
 | Category | Label in UI | Fill Color | Border / Stroke | Role |
 |---|---|---|---|---|
 | **Root Node** | `Root Node` | `#EF4444` | `#B91C1C` | Entry point of the evaluated AST |
-| **BinaryExpression** | `BinaryExpression` | `#3B82F6` | `#1D4ED8` | Infix binary operators (`+`, `-`, `*`, `/`) |
+| **AssignmentExpression** | `AssignmentExpression` | `#8B5CF6` | `#6D28D9` | Variable assignment (`=`) |
+| **BinaryExpression** | `BinaryExpression` | `#3B82F6` | `#1D4ED8` | Infix binary operators (`+`, `-`, `*`, `/`, `%`, `**`, `^`) |
 | **UnaryExpression** | `UnaryExpression` | `#F97316` | `#C2410C` | Prefix unary operators (`+`, `-`) |
 | **Identifier** | `Identifier` | `#22C55E` | `#15803D` | Variables and symbol names |
 | **Literal** | `NumericLiteral` | `#FACC15` | `#CA8A04` | Concrete numeric constants |
