@@ -348,7 +348,7 @@ ParseVision is engineered using modern, native web standards with zero runtime d
 Clone the repository and install the development dependencies:
 
 ```bash
-git clone <REPOSITORY_URL>
+git clone https://github.com/Apurba-0001/ParseVision
 cd ParseVision
 npm install
 ```
