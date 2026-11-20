@@ -45,7 +45,6 @@ npx vite preview
 - **Root-Anchored Viewport** — root node always centered at `viewportWidth / 2` on render and resize
 - **Collision-Free Layout** — recursively computed subtree bounding widths; uniform 64×64 px nodes
 - **Semantic Color Coding** — distinct colors per node type (see [Node Color Tokens](#node-color-tokens))
-- **Node Inspection** — click any node for a toast showing its type and properties
 
 ### Traversal Playback
 - **Three Algorithms** — Preorder, Inorder, Postorder depth-first traversals
